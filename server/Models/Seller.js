@@ -38,6 +38,7 @@ const sellerSchema = new Schema(
   { timestamps: true }
 );
 
+
 // Hash password before saving
 sellerSchema.pre('save', async function (next) {
   try {
