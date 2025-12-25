@@ -37,7 +37,23 @@ The application is currently **under construction** and is being developed in **
 - Modular **MVC architecture**
 - API testing via **Postman / Thunder Client**
 
-> API workflows are verified using Postman collections (screenshots will be added).
+## API Overview (Current Phase)
+
+Base URL: /api
+
+### Seller APIs
+
+| Method | Endpoint              | Description                  |
+|------- |----------------------|------------------------------|
+| POST   | /api/sellers/register | Register a new seller        |
+| POST   | /api/sellers/login    | Authenticate seller          |
+| GET    | /api/sellers          | Fetch all sellers            |
+| GET    | /api/sellers/:id      | Fetch seller by ID           |
+| PUT    | /api/sellers/:id      | Update seller details        |
+| DELETE | /api/sellers/:id      | Delete seller                |
+
+> APIs tested using Postman. Authentication currently uses hashed passwords.
+
 
 ---
 
@@ -83,6 +99,7 @@ GearBazar is being developed as a real startup idea and not just a demo project.
 **Md Arshi Khan**  
 Founder & Developer – GearBazar  
 Full-Stack Developer (MERN)
+
 
 
 
