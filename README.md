@@ -7,13 +7,6 @@ The application is currently **under construction** and is being developed in **
 
 ---
 
-## 🚧 Project Status
-
-> **Under Development**  
-> This repository currently contains the **backend foundation** of the GearBazar platform.
-
----
-
 ## 🧰 Tech Stack
 
 ### Backend
@@ -23,8 +16,7 @@ The application is currently **under construction** and is being developed in **
 - Mongoose  
 
 ### Frontend (Planned)
-- React  
-- Tailwind CSS  
+- React, Tailwind CSS  
 
 ---
 
@@ -35,7 +27,7 @@ The application is currently **under construction** and is being developed in **
 - Secure password hashing using **bcrypt**
 - CRUD APIs for seller management
 - Modular **MVC architecture**
-- API testing via **Postman / Thunder Client**
+- API testing via **Postman**
 
 ## API Overview (Current Phase)
 
@@ -54,25 +46,28 @@ Base URL: /api
 
 > APIs tested using Postman. Authentication currently uses hashed passwords.
 
-
----
-
-## 🔗 API Endpoints (Seller Module)
-
-**Base URL (local):**
-
-
 ---
 
 ## 🛠️ Local Setup (Backend)
 
+### Clone the repository
 ```bash
-cd server
+git clone https://github.com/Khan30-ai/Gear-Bazar.git
+```
+### Navigate to backend directory
+```bash
+cd GearBazar/server
+```
+### Install dependencies
+```bash
 npm install
+```
+### Start the development server
+```bash
 npm run dev
 ```
 
-Create a .env file inside server/:
+### Create a .env file inside server/:
 ```bash
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/gearbazar
@@ -99,6 +94,7 @@ GearBazar is being developed as a real startup idea and not just a demo project.
 **Md Arshi Khan**  
 Founder & Developer – GearBazar  
 Full-Stack Developer (MERN)
+
 
 
 
