@@ -28,11 +28,17 @@ export const getSellerById = asyncHandler(async (req, res) => {
 export const updateSeller = asyncHandler(async (req, res) => {
   const {id}=req.params;
 
-  
+  const allowedUpdates = {
+  name: req.body.name,
+  shopName: req.body.shopName,
+};
 
-  const updatedSeller = await Seller.findByIdAndUpdate(id, req.body, {
-    new: true,
-  }); // req.body= what to update ? which is new data , new: true will return updated document 
+const updatedSeller = await Seller.findByIdAndUpdate(
+  id,
+  allowedUpdates,
+  { new: true }
+);
+
 
   if (!updatedSeller) {
     res.status(404);
@@ -41,7 +47,7 @@ export const updateSeller = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     message: `Seller updated successfully`,
-    updateSeller,
+    seller: updatedSeller,
   });
 });
 // DELETE seller
