@@ -102,6 +102,36 @@ const ProductSchema = new Schema(
       index: true,
     },
 
+    //approval workflow 
+    approval:{
+      status:{
+        type: String,
+        enum:["pending","approved","rejected"],
+        default: "pending",
+        index: true,
+      },
+      approvedAt: {
+        type: Date,
+      },
+
+      rejectedAt: {
+        type: Date,
+      },
+      
+      rejectionReason:{
+        type:String,
+        trim: true,
+      },
+      lastActionBy: {
+        adminId: {
+          type: Schema.Types.ObjectId,
+        },
+        adminName: {
+          type: String,
+        },
+      },
+    },
+
     // Idempotency  (for duplicate protection)
     idempotencyKey: {
       type: String,
