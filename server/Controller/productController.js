@@ -138,6 +138,51 @@ export const getProducts = asyncHandler(async(req,res)=>{
         totalPages,
       });
 })
+
+export const getProductById= asyncHandler(async(req,res)=>{
+  const {id} = req.params;
+  const{sellerId, admin}= req.query;
+
+  //first Validate productId
+  if(!mongoose.Types.ObjectId.isValid(id)){
+    res.status(400);
+    throw new Error("Invalid product id");
+  } 
+  
+  //second is Fetch product
+  const product= await Product.findById(id).populate("sellerId","shopName");
+  if(!product){
+    res.status(404);
+    throw new Error("Product not found")
+  }
+
+  //third Admin can see everything
+  if(admin=== "true"){
+    return res.status(200).json({product});
+  }
+
+  //fourth is that seller can see own product and status
+  if(sellerId){
+    if(!mongoose.Types.ObjectId.isValid(sellerId)){
+      res.status(400);
+      throw new Error("Invalid sellerId")
+    }
+    if (product.sellerId._id.toString()===sellerId){
+      return res.status(200).json({product})
+    }
+    res.status(403);
+    throw new Error("You are not allowed to see this product");
+  }
+
+  //fifth is that buyer can see only approved product
+  if(product.approval.status !== "approved"){
+    res.status(403);
+    throw new Error("You are not allowed to view this product");
+
+  }
+  res.status(200).json({product});
+})
+
 {/*Admin : approve product */}
 export const approveProduct =  asyncHandler(async(req,res)=>{
     const {id}= req.params;
