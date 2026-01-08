@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import Product from "../Models/Product.js";
 import Seller from "../Models/Seller.js"
 import crypto from "crypto";
+import mongoose from "mongoose";
 
 {/*Admin will create a new product  as of now */}
  export const createdProduct = asyncHandler (async (req,res)=>{
@@ -82,7 +83,7 @@ res.status(201).json ({
 });
 //get product
 export const getProducts = asyncHandler(async(req,res)=>{
-      let {page,limit,admin} = req.query;
+      let {page,limit,admin,sellerId} = req.query;
       //deafults+sanitzation
       page= Math.max(parseInt(page) || 1,1);
       limit =Math.min(parseInt(limit) || 20,20);
@@ -90,9 +91,33 @@ export const getProducts = asyncHandler(async(req,res)=>{
       const skip = (page -1)*limit; //pagination maths if in page 2 then skip 20
 
       let filter={};
-      //Mongodb filter
-      if (admin !== "true"){
-        filter["approval.status"]="approved"
+
+      //Admin view which is highest priority
+      if(admin === "true") {
+        filter={};
+      }
+        //Seller dashboard view
+      else if(sellerId) {
+
+        if(!mongoose.Types.ObjectId.isValid(sellerId)){
+          res.status(400);
+          throw new Error("Invalid sellerId");
+        }
+
+          //validate seller exists
+        const seller = await Seller.findById(sellerId);
+        if(!seller){
+          res.status(404);
+          throw new Error("Seller not found");
+        }
+        // (block cross seller access (as for now))
+        //later this will be replaced by JWT auth
+        filter.sellerId = sellerId;
+      }
+
+      //buyer view (by default)
+      else{
+        filter["approval.status"]="approved";
       }
 
       const products= await Product.find(filter)
