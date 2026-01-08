@@ -59,6 +59,7 @@ const product= await Product.create({
     sellerId,
     name,
     category,
+    subcategory,
     partNumber,
     partNumberType,
     fitments,
@@ -79,36 +80,105 @@ res.status(201).json ({
     product: responseProduct,
 })
 });
+//get product
+export const getProducts = asyncHandler(async(req,res)=>{
+      let {page,limit,admin} = req.query;
+      //deafults+sanitzation
+      page= Math.max(parseInt(page) || 1,1);
+      limit =Math.min(parseInt(limit) || 20,20);
+
+      const skip = (page -1)*limit; //pagination maths if in page 2 then skip 20
+
+      let filter={};
+      //Mongodb filter
+      if (admin !== "true"){
+        filter["approval.status"]="approved"
+      }
+
+      const products= await Product.find(filter)
+      .sort({ createdAt: -1})
+      .skip(skip)
+      .limit(limit)
+      .populate("sellerId","shopName");
+
+      const total= await Product.countDocuments(filter); //all ,matching products
+
+      const totalPages = Math.ceil(total/limit)
+
+      res.status(200).json({
+        products,
+        page,
+        limit,
+        total,
+        totalPages,
+      });
+})
 {/*Admin : approve product */}
 export const approveProduct =  asyncHandler(async(req,res)=>{
     const {id}= req.params;
-    const product = await product.findById(id);
+    const product = await Product.findById(id);
 
     if(!product) {
         res.status(404);
         throw new Error(" Product not found");
     }
-    product.status = "approved";
-    await product.save();
+   if(product.approval.status!== "pending"){
+    res.status(409);
+    throw new Error("Product cannot be approved")
+   }
+   product.approval.status= "approved";
+   product.approval.approvedAt= new Date();
+   product.approval.rejectedAt= null;
+   product.approval.rejectionReason= null;
+
+    //Snapshot for security purpose
+   product.approval.lastActionBy ={
+    adminId: req.user?.id || null,
+    adminName: req.user?.name || "Admin"
+   };
+
+   await product.save();
 
     res.status(200).json({
         message : " Product approved successfully",
     });
 });
 {/*Admin : reject product */}
-export const rejectProduct = asyncHandler(async(req,res)=>{
-    const {id}= req.params;
+export const rejectProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
 
-    const product = await Product.findById(id);
-    
-    if(!product){
-        res.status(404);
-        throw new Error("Product not found");
-    }
-    product.status = "rejected"
-    await product.save();
+  const product = await Product.findById(id);
 
-    res.status(200).json({
-        message : " Product rejected successfully",
-    })
-})
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  if (product.approval.status !== "pending") {
+    res.status(409);
+    throw new Error("Product cannot be rejected");
+  }
+
+  if (!reason) {
+    res.status(400);
+    throw new Error("Rejection reason is required");
+  }
+
+  product.approval.status = "rejected";
+  product.approval.rejectedAt = new Date();
+  product.approval.rejectionReason = reason;
+
+  //snapshot 
+  product.approval.lastActionBy = {
+    adminId: req.user?.id || null,
+    adminName: req.user?.name || "Admin",
+  };
+
+  await product.save();
+
+  res.status(200).json({
+    message: "Product rejected successfully",
+    productId: product._id,
+  });
+});

@@ -5,7 +5,7 @@ const ProductSchema = new Schema(
     // Ownership
     sellerId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Seller",
       required: true,
       index: true,
     },
@@ -93,14 +93,6 @@ const ProductSchema = new Schema(
         type: String,
       },
     ],
-
-    // Approval workflow
-    status: {
-      type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
-      index: true,
-    },
 
     //approval workflow 
     approval:{
