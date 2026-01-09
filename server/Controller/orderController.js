@@ -88,6 +88,77 @@ export const createOrder = asyncHandler(async (req, res) => {
   });
 });
 
+//READ  
+//GET /api/orders
+export const getOrders= asyncHandler(async(req,res)=>{
+  let{page,limit,buyerId,sellerId,admin}= req.query;
+
+  //pagination 
+  page = Math.max(parseInt(page) || 1, 1);
+  limit = Math.min(parseInt(limit) || 10, 50);
+  const skip = (page - 1) * limit;
+
+  let filter={isDeleted: false};
+  let projection={};
+
+  //admin view(highest priority)
+  if(admin === "true"){
+    filter={} //No filter at all it even includes soft-deleted
+    projection=null; //admin sees full order 
+  }
+
+  //seller view
+  else if(sellerId) {
+    if(!mongoose.Types.ObjectId.isValid(sellerId)){
+      res.status(400);
+      throw new Error("Invalid sellerId");
+    }
+    filter={
+      sellerId,
+      isDeleted: false,
+    };
+    projection={
+      "buyerSnapshot.phone": 0,  //hides phone number
+      confirmedBy:0,
+    };
+  }
+
+  //Buyer view (default)
+  else if(buyerId){
+    if(!mongoose.Types.ObjectId.isValid(buyerId)) {
+      res.status(400);
+      throw new Error("Invalid buyerId");
+    }
+    filter={
+      buyerId,
+      isDeleted: false,
+    };
+
+    projection={
+      confirmedBy: 0,
+    };
+  }
+
+  //no role info then reject
+  else{
+    res.status(400);
+    throw new Error("Role information missing");
+  }
+
+  const orders= await Order.find(filter,projection)
+  .sort({createdAt: -1}) //newest first
+  .skip(skip)
+  .limit(limit)
+  .populate("sellerId","shopName");
+
+  const total= await Order.countDocuments(filter);
+  const totalPages = Math.ceil(total/limit);
+
+  res.status(200).json({
+    orders,page,limit,total,totalPages,
+  });
+});
+
 //CONFIRMED
 export const confirmOrder = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -254,3 +325,4 @@ export const deliverOrder = asyncHandler(async (req, res) => {
     status: order.orderStatus,
   });
 });
+

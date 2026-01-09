@@ -74,10 +74,14 @@ const orderSchema = new mongoose.Schema(
     cancelledAt: Date,
 
     confirmedBy: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "Admin",
+      default: null,
     },
-    cancelReason: String,
+    cancelReason: {
+      type: String,
+      default: null,
+    }
   },
   {
     timestamps: true, //createdAt, updatedAt
