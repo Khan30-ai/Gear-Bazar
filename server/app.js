@@ -3,6 +3,8 @@ import cors from 'cors';
 import sellerRoutes from './Routes/sellerRoutes.js';
 import errorHandler from './Middleware/errorHandler.js';
 import productRoutes from "./Routes/productRoutes.js"
+import orderRoutes from "./Routes/orderRoutes.js"
+
 const app = express();
 
 app.use(express.json());
@@ -16,6 +18,7 @@ app.get('/api/health', (req, res) => {
 // Routes
 app.use('/api/sellers', sellerRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);  //this will change into (,adminAuth,confirmOrder) once jwt comes
 
 //to catch unknown routes
 app.use((req,res,next)=>{
