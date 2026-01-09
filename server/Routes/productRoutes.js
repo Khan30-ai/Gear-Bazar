@@ -1,5 +1,5 @@
 import express from "express";
-import { createdProduct,approveProduct,rejectProduct,getProducts, getProductById } from "../Controller/productController.js";
+import { createdProduct,approveProduct,rejectProduct,getProducts, getProductById, updateProductStock } from "../Controller/productController.js";
 import Seller from "../Models/Seller.js";
 
 const router = express.Router();
@@ -17,6 +17,9 @@ router.put("/:id/reject", rejectProduct);
 
 //getting product by id
 router.get("/:id", getProductById);
+
+//stock update
+router.put("/:id/stock", updateProductStock)
 
 
 export default router;
