@@ -2,8 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import sellerRoutes from './Routes/sellerRoutes.js';
 import errorHandler from './Middleware/errorHandler.js';
-import productRoutes from "./Routes/productRoutes.js"
-import orderRoutes from "./Routes/orderRoutes.js"
+import productRoutes from "./Routes/productRoutes.js";
+import orderRoutes from "./Routes/orderRoutes.js";
+import authRoutes from "./Routes/authRoutes.js";
+
 
 const app = express();
 
@@ -16,6 +18,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Routes
+app.use("/api/auth",authRoutes);
 app.use('/api/sellers', sellerRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);  //this will change into (,adminAuth,confirmOrder) once jwt comes
