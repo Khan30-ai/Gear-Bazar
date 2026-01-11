@@ -2,14 +2,20 @@ import asyncHandler from "express-async-handler";
 import mongoose from "mongoose";
 import Order from "../Models/Order.js";
 import Product from "../Models/Product.js";
-import Buyer from "../Models/Buyer.js";
+import User from "../Models/User.js";
 
 //CREATED
 export const createOrder = asyncHandler(async (req, res) => {
-  const { productId, quantity, address, buyerId } = req.body; //later when jwt will come then request will be from user (req.user)
+  const { productId, quantity, address } = req.body;
+  const loggedInUserId = req.user?.id; //JWT injects this
 
+  //auth check(middleware should already do this ,extra safety)
+  if (!req.user) {
+    res.status(401);
+    throw new Error("Authentication required");
+  }
   //basic validations
-  if (!productId || !quantity || !address || !buyerId) {
+  if (!productId || !quantity || !address) {
     res.status(400);
     throw new Error("Missing required fields");
   }
@@ -19,18 +25,19 @@ export const createOrder = asyncHandler(async (req, res) => {
     throw new Error("Invalid product");
   }
 
-  if (!mongoose.Types.ObjectId.isValid(buyerId)) {
-    res.status(400);
-    throw new Error("Invalid buyer");
-  }
-
   if (quantity < 1) {
     res.status(400);
     throw new Error("Quantity must be atleast 1");
   }
 
+  //jwt based buyer validation
+  if (!req.user.roles.includes("buyer") && !req.user.roles.includes("admin")) {
+    res.status(403);
+    throw new Error("Only buyers can create order");
+  }
+
   //fetch buyer
-  const buyer = await Buyer.findById(buyerId);
+  const buyer = await User.findById(loggedInUserId);
 
   if (!buyer) {
     res.status(404);
@@ -58,8 +65,8 @@ export const createOrder = asyncHandler(async (req, res) => {
   const totalAmount = priceAtOrderTime * quantity;
 
   const order = await Order.create({
-    buyerId: buyer._id,
-    sellerId: product.sellerId,
+    buyerId: loggedInUserId,   //USER is buyer
+    sellerId: product.sellerId,   //SELLER comes from product
     productId: product._id,
 
     productSnapshot: {
@@ -72,7 +79,6 @@ export const createOrder = asyncHandler(async (req, res) => {
 
     buyerSnapshot: {
       name: buyer.name,
-      phone: buyer.phone,
       address,
     },
 
@@ -88,74 +94,78 @@ export const createOrder = asyncHandler(async (req, res) => {
   });
 });
 
-//READ  
+//READ
 //GET /api/orders
-export const getOrders= asyncHandler(async(req,res)=>{
-  let{page,limit,buyerId,sellerId,admin}= req.query;
+export const getOrders = asyncHandler(async (req, res) => {
+  if (!req.user) {
+    res.status(401);
+    throw new Error("Authentication required");
+  }
 
-  //pagination 
+  let { page, limit } = req.query;
+
+  //pagination
   page = Math.max(parseInt(page) || 1, 1);
   limit = Math.min(parseInt(limit) || 10, 50);
   const skip = (page - 1) * limit;
 
-  let filter={isDeleted: false};
-  let projection={};
+  const userId = req.user.id;
+  const roles = req.user.roles;
 
-  //admin view(highest priority)
-  if(admin === "true"){
-    filter={} //No filter at all it even includes soft-deleted
-    projection=null; //admin sees full order 
+  let filter = {};
+  let projection = {};
+
+  //admin view(highest priority)  also in future add date range ,price etc.
+  if (roles.includes("admin")) {
+    filter = {}; //No filter at all it even includes soft deleted
+    projection = {}; //admin sees full order
   }
 
   //seller view
-  else if(sellerId) {
-    if(!mongoose.Types.ObjectId.isValid(sellerId)){
-      res.status(400);
-      throw new Error("Invalid sellerId");
-    }
-    filter={
-      sellerId,
+  else if (roles.includes("seller")) {
+    filter = {
+      sellerId: req.user.sellerId,
       isDeleted: false,
     };
-    projection={
-      "buyerSnapshot.phone": 0,  //hides phone number
-      confirmedBy:0,
+    projection = {
+      "buyerSnapshot.phone": 0, //hides phone number
+      confirmedBy: 0,
     };
   }
 
   //Buyer view (default)
-  else if(buyerId){
-    if(!mongoose.Types.ObjectId.isValid(buyerId)) {
-      res.status(400);
-      throw new Error("Invalid buyerId");
-    }
-    filter={
-      buyerId,
+  else if (roles.includes("buyer")) {
+    filter = {
+      buyerId: userId,
       isDeleted: false,
     };
 
-    projection={
+    projection = {
       confirmedBy: 0,
     };
   }
 
   //no role info then reject
-  else{
-    res.status(400);
-    throw new Error("Role information missing");
+  else {
+    res.status(403);
+    throw new Error("Not authorized to view orders");
   }
 
-  const orders= await Order.find(filter,projection)
-  .sort({createdAt: -1}) //newest first
-  .skip(skip)
-  .limit(limit)
-  .populate("sellerId","shopName");
+  const orders = await Order.find(filter, projection)
+    .sort({ createdAt: -1 }) //newest first
+    .skip(skip)
+    .limit(limit)
+    .populate("sellerId", "shopName");
 
-  const total= await Order.countDocuments(filter);
-  const totalPages = Math.ceil(total/limit);
+  const total = await Order.countDocuments(filter);
+  const totalPages = Math.ceil(total / limit);
 
   res.status(200).json({
-    orders,page,limit,total,totalPages,
+    orders,
+    page,
+    limit,
+    total,
+    totalPages,
   });
 });
 
@@ -163,12 +173,16 @@ export const getOrders= asyncHandler(async(req,res)=>{
 export const confirmOrder = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  //validate order id
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  //validate order id  [in future change code to allow seller to confirm own product orders]
+  if (!req.user.roles.includes("admin")) {
+    res.status(403);
+    throw new Error("Only admin can confirm orders");
+  }
+
+  if(!mongoose.Types.ObjectId.isValid(id)){
     res.status(400);
     throw new Error("Invalid orderId");
   }
-
   //fetch order
   const order = await Order.findById(id);
 
@@ -206,7 +220,7 @@ export const confirmOrder = asyncHandler(async (req, res) => {
   //update order state
   order.orderStatus = "CONFIRMED";
   order.confirmedAt = new Date();
-  order.confirmedBy = req.user?.id || null; // admin later via JWT
+  order.confirmedBy = req.user.id 
 
   await order.save();
 
@@ -242,13 +256,11 @@ export const cancelOrder = asyncHandler(async (req, res) => {
   }
 
   //authorization rules (who can cancel at what point)
-  const isAdmin = Boolean(req.user?.isAdmin); //in future jwt
+  const isAdmin = req.user.roles.includes("admin"); //in future jwt
 
   //now buyer will be authorized to cancel CREATED order
   // and this code will remove later on once we add JWT
-  const isBuyer =
-    req.user?.id?.toString() === order.buyerId.toString() ||
-    req.body.buyerId?.toString() === order.buyerId.toString();
+  const isBuyer = req.user.id.toString() === order.buyerId.toString();
 
   if (order.orderStatus === "CONFIRMED" && !isAdmin) {
     res.status(403);
@@ -260,7 +272,7 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     throw new Error("Not authorized to cancel this order");
   }
 
-  //restore stock if needed
+  //restore stock if needed  [in future transaction or session atomicity  will be addded here]
   if (order.orderStatus === "CONFIRMED") {
     const product = await Product.findById(order.productId);
 
@@ -292,7 +304,7 @@ export const cancelOrder = asyncHandler(async (req, res) => {
 export const deliverOrder = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  //validate order id
+  //validate order id [in future here will be integrated logistic and otp based deleivery]
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);
     throw new Error("Invalid orderId");
@@ -325,4 +337,3 @@ export const deliverOrder = asyncHandler(async (req, res) => {
     status: order.orderStatus,
   });
 });
-

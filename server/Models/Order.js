@@ -12,7 +12,7 @@ const orderSchema = new mongoose.Schema(
     //Relationship between buyer , seller and product
     buyerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Buyer",
+      ref: "User",
       required: true,
     },
     sellerId: {
@@ -38,7 +38,6 @@ const orderSchema = new mongoose.Schema(
     //buyer snapshot again immutable
     buyerSnapshot: {
       name: { type: String, required: true },
-      phone: { type: String, required: true },
       address: { type: String, required: true },
     },
 
