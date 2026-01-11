@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import bcrypt from "bcryptjs";
 import User from "../Models/User.js";
 import generateToken from "../utils/generateToken.js";
+import crypto from "crypto";
 
 //Register
 export const registerUser = asyncHandler(async (req, res) => {
@@ -73,3 +74,75 @@ export const loginUser = asyncHandler(async (req, res) => {
     },
   });
 });
+
+//forgot password
+export const forgotPassword = asyncHandler(async(req,res)=>{
+  const {email}= req.body;
+
+  if(!email){
+    res.status(400);
+    throw new Error("Email is required");
+  }
+  const user= await User.findOne({email});
+  if(!user){
+    return res.status(200).json({
+      message: "Check email the reset link has been sent",
+    });
+  }
+  //generate reset token , it will be plain
+  const resetToken= crypto.randomBytes(32).toString("hex");
+
+  const hashedToken = crypto //hash token before saving it 
+  .createHash("sha256")
+  .update(resetToken)
+  .digest("hex");
+
+  user.resetPasswordToken = hashedToken;
+  user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; //15 min 
+
+  await user.save({validateBeforeSave:false});
+
+  const resetURL = `${req.protocol}://${req.get("host")}/api/auth/reset-password/${resetToken}`;
+
+  console.log("RESET PASSWORD URL:", resetURL);
+
+  res.status(200).json({
+    message: "Password reset link sent",
+  });
+});
+
+export const resetPassword = asyncHandler(async (req,res)=>{
+  const {token}= req.params;
+  const {password} = req.body;
+
+  if(!password){
+    res.status(400);
+    throw new Error("New password is required");
+  }
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+    const user= await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: {$gt: Date.now()},
+    }).select("+password");
+
+    if(!user){
+      res.status(400);
+      throw new Error("Token is Inavlid or expired");
+    }
+    //set new password
+    user.password= password;
+
+    //here reset fields will be clear
+    user.resetPasswordToken= undefined;
+    user.resetPasswordExpire= undefined;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Password reset successful",
+    })
+})
