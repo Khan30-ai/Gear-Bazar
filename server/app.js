@@ -5,7 +5,7 @@ import errorHandler from './Middleware/errorHandler.js';
 import productRoutes from "./Routes/productRoutes.js";
 import orderRoutes from "./Routes/orderRoutes.js";
 import authRoutes from "./Routes/authRoutes.js";
-
+import userRoutes from "./Routes/userRoutes.js";
 
 const app = express();
 
@@ -22,6 +22,7 @@ app.use("/api/auth",authRoutes);
 app.use('/api/sellers', sellerRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);  //this will change into (,adminAuth,confirmOrder) once jwt comes
+app.use("/api/users",userRoutes);
 
 //to catch unknown routes
 app.use((req,res,next)=>{

@@ -1,15 +1,16 @@
 import asyncHandler from "express-async-handler";
 import Product from "../Models/Product.js";
 import Seller from "../Models/Seller.js";
+import User from "../Models/User.js";
 import crypto from "crypto";
 import mongoose from "mongoose";
+import { resolveSoa } from "dns";
 
 {
   /*Admin will create a new product  as of now */
 }
 export const createdProduct = asyncHandler(async (req, res) => {
   const {
-    sellerId,
     name,
     category,
     subcategory,
@@ -23,10 +24,12 @@ export const createdProduct = asyncHandler(async (req, res) => {
     images,
   } = req.body;
 
+  //seller id will come from jwt
+  const userId = req.user.id;
+
   //now basic required fields check
 
   if (
-    !sellerId ||
     !name ||
     !category ||
     !subcategory ||
@@ -39,7 +42,7 @@ export const createdProduct = asyncHandler(async (req, res) => {
     throw new Error("Missing required product fields");
   }
   // Validate seller existence
-  const seller = await Seller.findById(sellerId);
+  const seller = await Seller.findById(userId);
 
   if (!seller) {
     res.status(404);
@@ -62,12 +65,12 @@ we have to make and then insert it into the product */
 
   const idempotencyKey = crypto
     .createHash("sha256")
-    .update(`${sellerId}-${partNumber}-${partNumberType}`)
+    .update(`${seller._id}-${partNumber}-${partNumberType}`)
     .digest("hex");
 
   //create product
   const product = await Product.create({
-    sellerId,
+    sellerId: seller._id,
     name,
     category,
     subcategory,
@@ -93,35 +96,27 @@ we have to make and then insert it into the product */
 });
 //get product
 export const getProducts = asyncHandler(async (req, res) => {
-  let { page, limit, admin, sellerId } = req.query;
+  let { page, limit} = req.query;
   //deafults+sanitzation
   page = Math.max(parseInt(page) || 1, 1);
   limit = Math.min(parseInt(limit) || 20, 20);
-
   const skip = (page - 1) * limit; //pagination maths if in page 2 then skip 20
 
+  const roles = req.user?.roles || [];
   let filter = {};
 
-  //Admin view which is highest priority
-  if (admin === "true") {
+  //Admin sees everything 
+  if (roles.includes("admin")) {
     filter = {};
   }
   //Seller dashboard view
-  else if (sellerId) {
-    if (!mongoose.Types.ObjectId.isValid(sellerId)) {
-      res.status(400);
-      throw new Error("Invalid sellerId");
-    }
-
-    //validate seller exists
-    const seller = await Seller.findById(sellerId);
+  else if (roles.includes("seller")) {
+    const seller =  await Seller.findOne({userId: req.user.id});
     if (!seller) {
-      res.status(404);
-      throw new Error("Seller not found");
+      res.status(403);
+      throw new Error("Seller profile not found");
     }
-    // (block cross seller access (as for now))
-    //later this will be replaced by JWT auth
-    filter.sellerId = sellerId;
+    filter.sellerId = seller._id;
   }
 
   //buyer view (by default)
@@ -136,7 +131,6 @@ export const getProducts = asyncHandler(async (req, res) => {
     .populate("sellerId", "shopName");
 
   const total = await Product.countDocuments(filter); //all ,matching products
-
   const totalPages = Math.ceil(total / limit);
 
   res.status(200).json({
@@ -146,47 +140,44 @@ export const getProducts = asyncHandler(async (req, res) => {
     total,
     totalPages,
   });
-});
+});    //sarch and category filter will be implemented here
 
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { sellerId, admin } = req.query;
 
   //first Validate productId
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);
     throw new Error("Invalid product id");
   }
-
   //second is Fetch product
   const product = await Product.findById(id).populate("sellerId", "shopName");
+
   if (!product) {
     res.status(404);
     throw new Error("Product not found");
   }
 
+    const roles = req.user?.roles || [];
   //third Admin can see everything
-  if (admin === "true") {
+  if (roles.includes("admin")) {
     return res.status(200).json({ product });
   }
 
   //fourth is that seller can see own product and status
-  if (sellerId) {
-    if (!mongoose.Types.ObjectId.isValid(sellerId)) {
-      res.status(400);
-      throw new Error("Invalid sellerId");
+  if (roles.includes("seller")) {
+    const seller = await Seller.findOne({userId: req.user.id})
+    if (seller && product.sellerId._id.toString()=== seller._id.toString()) {
+      return res.status(200).json({product})
     }
-    if (product.sellerId._id.toString() === sellerId) {
-      return res.status(200).json({ product });
+   res.status(403);
+   throw new Error("Not allowed to view this product");
     }
-    res.status(403);
-    throw new Error("You are not allowed to see this product");
-  }
-
+    
   //fifth is that buyer can see only approved product
   if (product.approval.status !== "approved") {
     res.status(403);
-    throw new Error("You are not allowed to view this product");
+    throw new Error("Product not available");
   }
   res.status(200).json({ product });
 });
@@ -198,6 +189,10 @@ export const approveProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const product = await Product.findById(id);
 
+  if(!req.user.roles.includes("admin")){
+    res.status(403);
+    throw new Error("Only admin can perform this action")
+  }
   if (!product) {
     res.status(404);
     throw new Error(" Product not found");
@@ -231,6 +226,10 @@ export const rejectProduct = asyncHandler(async (req, res) => {
   const { reason } = req.body;
 
   const product = await Product.findById(id);
+  if(!req.user.roles.includes("admin")){
+    res.status(403);
+    throw new Error("Only admin can perform this action")
+  }
 
   if (!product) {
     res.status(404);
@@ -288,16 +287,24 @@ export const updateProductStock= asyncHandler(async(req,res)=>{
     res.status(404);
     throw new Error("Product not found");
   }
-  
-  //Only approve products can have stock updated
-  if(product.approval.status !== "approved"){
-    res.status(409);
-    throw new Error("Stock can only be updated for approved products");
+  //admin can update any product
+  if(req.user.roles.includes("admin")){
+    product.stock= stock;
+    await product.save();
   }
-
-  //update stock
-  product.stock = stock;
-  await product.save();
+          //seller can approve only own products
+  else if (req.user.roles.incliudes("seller")){
+    const seller = await Seller.findOne({userId: req.user.id});
+    if(!seller || product.sellerId.toString() !== seller._id.toString()){
+      res.status(403);
+      throw new Error("Not allowed to update this product");
+    }
+    product.stock=stock;
+    await product.save();
+  } else{
+    res.status(403);
+    throw new Error("Not authorized")
+  }
 
   res.status(200).json({
     message: "Stock updated successfully",
