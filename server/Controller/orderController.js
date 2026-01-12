@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Order from "../Models/Order.js";
 import Product from "../Models/Product.js";
 import User from "../Models/User.js";
+import Seller from "../Models/Seller.js";
 
 //CREATED
 export const createOrder = asyncHandler(async (req, res) => {
@@ -65,8 +66,8 @@ export const createOrder = asyncHandler(async (req, res) => {
   const totalAmount = priceAtOrderTime * quantity;
 
   const order = await Order.create({
-    buyerId: loggedInUserId,   //USER is buyer
-    sellerId: product.sellerId,   //SELLER comes from product
+    buyerId: loggedInUserId, //USER is buyer
+    sellerId: product.sellerId, //SELLER comes from product
     productId: product._id,
 
     productSnapshot: {
@@ -97,11 +98,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 //READ
 //GET /api/orders
 export const getOrders = asyncHandler(async (req, res) => {
-  if (!req.user) {
-    res.status(401);
-    throw new Error("Authentication required");
-  }
-
+  
   let { page, limit } = req.query;
 
   //pagination
@@ -123,8 +120,13 @@ export const getOrders = asyncHandler(async (req, res) => {
 
   //seller view
   else if (roles.includes("seller")) {
+    const seller = await Seller.findOne({userId: userId });
+    if (!seller) {
+      res.status(403);
+      throw new Error("Seller not found");
+    }
     filter = {
-      sellerId: req.user.sellerId,
+      sellerId: seller._id,
       isDeleted: false,
     };
     projection = {
@@ -179,7 +181,7 @@ export const confirmOrder = asyncHandler(async (req, res) => {
     throw new Error("Only admin can confirm orders");
   }
 
-  if(!mongoose.Types.ObjectId.isValid(id)){
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);
     throw new Error("Invalid orderId");
   }
@@ -220,7 +222,7 @@ export const confirmOrder = asyncHandler(async (req, res) => {
   //update order state
   order.orderStatus = "CONFIRMED";
   order.confirmedAt = new Date();
-  order.confirmedBy = req.user.id 
+  order.confirmedBy = req.user.id;
 
   await order.save();
 
@@ -308,6 +310,10 @@ export const deliverOrder = asyncHandler(async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);
     throw new Error("Invalid orderId");
+  }
+  if (!req.user.roles.includes("admin")) {
+    res.status(403);
+    throw new Error("Only admin can mark orders as delivered");
   }
 
   //fetch order

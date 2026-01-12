@@ -1,21 +1,22 @@
 import express from "express";
 import {
-  getSellers,
-  getSellerById,
-  updateSeller,
-  deleteSeller,
-  loginSeller,
-  registerSeller,
+  createSellerProfile,
+  getMySellerProfile,
+  updateMysellerProfile,
+  getAllSellers,
+  approveSeller,
 } from "../Controller/sellerController.js";
+import auth from "../Middleware/auth.js";
+import authorize from "../Middleware/authorize.js";
 
 const router = express.Router();
-//Crud
-router.get("/", getSellers);
-router.get("/:id", getSellerById);
-router.put("/:id", updateSeller);
-router.delete("/:id", deleteSeller);
-//Auth
-router.post("/register", registerSeller);
-router.post("/login", loginSeller);
+//seller routes
+router.post("/profile", auth, authorize("seller","admin"), createSellerProfile); //both admin and seller can create seller but in futurre remove admin
+router.get("/profile", auth, authorize("seller"), getMySellerProfile);
+router.put("/profile", auth , authorize("seller"),updateMysellerProfile);
+
+//admin routes
+router.get("/",auth, authorize("admin"),getAllSellers);
+router.put("/:id/approve", auth, authorize, approveSeller);
 
 export default router;

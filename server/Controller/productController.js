@@ -1,10 +1,8 @@
 import asyncHandler from "express-async-handler";
 import Product from "../Models/Product.js";
 import Seller from "../Models/Seller.js";
-import User from "../Models/User.js";
 import crypto from "crypto";
 import mongoose from "mongoose";
-import { resolveSoa } from "dns";
 
 {
   /*Admin will create a new product  as of now */
@@ -42,7 +40,7 @@ export const createdProduct = asyncHandler(async (req, res) => {
     throw new Error("Missing required product fields");
   }
   // Validate seller existence
-  const seller = await Seller.findById(userId);
+  const seller = await Seller.findById({ userId });
 
   if (!seller) {
     res.status(404);
@@ -96,7 +94,7 @@ we have to make and then insert it into the product */
 });
 //get product
 export const getProducts = asyncHandler(async (req, res) => {
-  let { page, limit} = req.query;
+  let { page, limit } = req.query;
   //deafults+sanitzation
   page = Math.max(parseInt(page) || 1, 1);
   limit = Math.min(parseInt(limit) || 20, 20);
@@ -105,13 +103,13 @@ export const getProducts = asyncHandler(async (req, res) => {
   const roles = req.user?.roles || [];
   let filter = {};
 
-  //Admin sees everything 
+  //Admin sees everything
   if (roles.includes("admin")) {
     filter = {};
   }
   //Seller dashboard view
   else if (roles.includes("seller")) {
-    const seller =  await Seller.findOne({userId: req.user.id});
+    const seller = await Seller.findOne({ userId: req.user.id });
     if (!seller) {
       res.status(403);
       throw new Error("Seller profile not found");
@@ -140,7 +138,7 @@ export const getProducts = asyncHandler(async (req, res) => {
     total,
     totalPages,
   });
-});    //sarch and category filter will be implemented here
+}); //sarch and category filter will be implemented here
 
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -158,7 +156,7 @@ export const getProductById = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 
-    const roles = req.user?.roles || [];
+  const roles = req.user?.roles || [];
   //third Admin can see everything
   if (roles.includes("admin")) {
     return res.status(200).json({ product });
@@ -166,14 +164,14 @@ export const getProductById = asyncHandler(async (req, res) => {
 
   //fourth is that seller can see own product and status
   if (roles.includes("seller")) {
-    const seller = await Seller.findOne({userId: req.user.id})
-    if (seller && product.sellerId._id.toString()=== seller._id.toString()) {
-      return res.status(200).json({product})
+    const seller = await Seller.findOne({ userId: req.user.id });
+    if (seller && product.sellerId._id.toString() === seller._id.toString()) {
+      return res.status(200).json({ product });
     }
-   res.status(403);
-   throw new Error("Not allowed to view this product");
-    }
-    
+    res.status(403);
+    throw new Error("Not allowed to view this product");
+  }
+
   //fifth is that buyer can see only approved product
   if (product.approval.status !== "approved") {
     res.status(403);
@@ -189,9 +187,9 @@ export const approveProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const product = await Product.findById(id);
 
-  if(!req.user.roles.includes("admin")){
+  if (!req.user.roles.includes("admin")) {
     res.status(403);
-    throw new Error("Only admin can perform this action")
+    throw new Error("Only admin can perform this action");
   }
   if (!product) {
     res.status(404);
@@ -226,9 +224,9 @@ export const rejectProduct = asyncHandler(async (req, res) => {
   const { reason } = req.body;
 
   const product = await Product.findById(id);
-  if(!req.user.roles.includes("admin")){
+  if (!req.user.roles.includes("admin")) {
     res.status(403);
-    throw new Error("Only admin can perform this action")
+    throw new Error("Only admin can perform this action");
   }
 
   if (!product) {
@@ -265,51 +263,57 @@ export const rejectProduct = asyncHandler(async (req, res) => {
 });
 
 //Admin can update product stock
-export const updateProductStock= asyncHandler(async(req,res)=>{
-  const {id}= req.params;
-  const {stock}= req.body;
+export const updateProductStock = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { stock } = req.body;
 
   //validate product Id
-  if(!mongoose.Types.ObjectId.isValid(id)){
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);
     throw new Error("Invalid product id");
   }
 
   //validate stock
-  if(stock === undefined || !Number.isInteger(stock)|| stock<0){
+  if (stock === undefined || !Number.isInteger(stock) || stock < 0) {
     res.status(400);
     throw new Error("Stock must be a non negative integer");
   }
   //Fetch product
   const product = await Product.findById(id);
 
-  if(!product){
+  if (!product) {
     res.status(404);
     throw new Error("Product not found");
   }
   //admin can update any product
-  if(req.user.roles.includes("admin")){
-    product.stock= stock;
+  if (req.user.roles.includes("admin")) {
+    product.stock = stock;
     await product.save();
   }
-          //seller can approve only own products
-  else if (req.user.roles.incliudes("seller")){
-    const seller = await Seller.findOne({userId: req.user.id});
-    if(!seller || product.sellerId.toString() !== seller._id.toString()){
+  if (
+    !req.user.roles.includes("admin") &&
+    product.approval.status !== "approved"
+  ) {
+    res.status(409);
+    throw new Error("Stock can only be updated for approved products");
+  }
+  //seller can approve only own products
+  else if (req.user.roles.includes("seller")) {
+    const seller = await Seller.findOne({ userId: req.user.id });
+    if (!seller || product.sellerId.toString() !== seller._id.toString()) {
       res.status(403);
       throw new Error("Not allowed to update this product");
     }
-    product.stock=stock;
+    product.stock = stock;
     await product.save();
-  } else{
+  } else {
     res.status(403);
-    throw new Error("Not authorized")
+    throw new Error("Not authorized");
   }
 
   res.status(200).json({
     message: "Stock updated successfully",
     productId: product._id,
     stock: product.stock,
-  })
-
-})
+  });
+});
