@@ -17,6 +17,6 @@ router.put("/profile", auth , authorize("seller"), updateMySellerProfile);
 
 //admin routes
 router.get("/",auth, authorize("admin"),getAllSellers);
-router.put("/:id/approve", auth, authorize, approveSeller);
+router.put("/:id/approve", auth, authorize("admin"), approveSeller);
 
 export default router;
