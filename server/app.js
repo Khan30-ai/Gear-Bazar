@@ -12,9 +12,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
+
+app.get("/", (req, res) => {
+  res.json({
+    message: "GearBazar API is running successfully",
+  });
 });
 
 // Routes
