@@ -51,7 +51,7 @@ export const getMySellerProfile = asyncHandler(async (req, res) => {
 });
 
 //Update my seller profile
-const updateMySellerProfile= asyncHandler(async(req,res)=>{
+export const updateMySellerProfile= asyncHandler(async(req,res)=>{
   const {shopName} = req.body;
 
   const seller = await Seller.findOne({userId: req.user.id});

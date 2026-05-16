@@ -2,7 +2,7 @@ import express from "express";
 import {
   createSellerProfile,
   getMySellerProfile,
-  updateMysellerProfile,
+  updateMySellerProfile,
   getAllSellers,
   approveSeller,
 } from "../Controller/sellerController.js";
@@ -13,7 +13,7 @@ const router = express.Router();
 //seller routes
 router.post("/profile", auth, authorize("seller","admin"), createSellerProfile); //both admin and seller can create seller but in futurre remove admin
 router.get("/profile", auth, authorize("seller"), getMySellerProfile);
-router.put("/profile", auth , authorize("seller"),updateMysellerProfile);
+router.put("/profile", auth , authorize("seller"), updateMySellerProfile);
 
 //admin routes
 router.get("/",auth, authorize("admin"),getAllSellers);
