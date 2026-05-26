@@ -47,15 +47,24 @@ const orderSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
-    
+
     priceAtOrderTime: {
       type: Number,
       required: true,
     },
 
-    totalAmount: {
+    grandTotal: {
       type: Number,
       required: true,
+    },
+
+    shippingAddress: {
+      fullName: String,
+      phone: String,
+      address: String,
+      city: String,
+      state: String,
+      pincode: String,
     },
 
     //soft delete
@@ -65,6 +74,12 @@ const orderSchema = new mongoose.Schema(
     },
     deletedAt: {
       type: Date,
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["PENDING", "PAID", "FAILED"],
+      default: "PENDING",
     },
 
     //Lifecycle timestamps
