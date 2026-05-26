@@ -16,6 +16,11 @@ const ProductSchema = new Schema(
       trim: true,
     },
 
+    description: {
+      type: String,
+      trim: true,
+    },
+
     category: {
       type: String,
       required: true,
@@ -32,7 +37,7 @@ const ProductSchema = new Schema(
       trim: true,
     },
 
-    partNumberType: {
+    partType: {
       type: String,
       enum: ["OEM", "AFTERMARKET", "GENERIC"],
       required: true,
@@ -78,14 +83,18 @@ const ProductSchema = new Schema(
       required: true,
       min: 0,
     },
+    weightKg: {
+      type: Number,
+    },
 
     // Optional identifiers
     oemPartNumber: {
       type: String,
     },
 
-    aftermarketBrand: {
+    brand: {
       type: String,
+      required: true,
     },
     // Images (optional at creation, required before approval)
     images: [
@@ -93,12 +102,17 @@ const ProductSchema = new Schema(
         type: String,
       },
     ],
+    warrantyMonths: {
+      type: Number,
+      default: 0,
+    },
+
 
     //approval workflow 
-    approval:{
-      status:{
+    approval: {
+      status: {
         type: String,
-        enum:["pending","approved","rejected"],
+        enum: ["pending", "approved", "rejected"],
         default: "pending",
         index: true,
       },
@@ -109,9 +123,9 @@ const ProductSchema = new Schema(
       rejectedAt: {
         type: Date,
       },
-      
-      rejectionReason:{
-        type:String,
+
+      rejectionReason: {
+        type: String,
         trim: true,
       },
       lastActionBy: {
