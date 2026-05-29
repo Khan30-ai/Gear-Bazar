@@ -5,7 +5,8 @@ import asyncHandler from "express-async-handler";
 const auth = asyncHandler(async (req, res, next) => {
   let token;
 
- //take token from authorization header
+  console.log("AUTH HEADER:", req.headers.authorization);
+  //take token from authorization header
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
@@ -18,7 +19,12 @@ const auth = asyncHandler(async (req, res, next) => {
   }
 
   try {
+    console.log("TOKEN RECEIVED:", token);
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    console.log("DECODED JWT:", decoded);
+
     req.user = {
       id: decoded.id,
       roles: decoded.roles,
@@ -26,6 +32,8 @@ const auth = asyncHandler(async (req, res, next) => {
 
     next();
   } catch (error) {
+    console.log("JWT ERROR:", error.message);
+
     res.status(401);
     throw new Error("Not authorized, token invalid or expired");
   }
