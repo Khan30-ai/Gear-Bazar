@@ -61,8 +61,8 @@ export default function Header() {
 
             <div className="flex items-center gap-4">
 
-              {/* Become a Seller — only when logged in */}
-              {user && (
+              {/* Become a Seller */}
+              {user && !user.roles?.includes('seller') && !user.roles?.includes('admin') && (
                 <a
                   href="/become-seller"
                   className="text-sm font-semibold text-orange-500 hover:text-white border border-orange-500/40 hover:bg-orange-600 hover:border-orange-600 px-4.5 py-1.5 rounded-sm transition-all tracking-wide"
@@ -183,8 +183,8 @@ export default function Header() {
 
           <div className="pt-2 border-t border-slate-800/80 flex flex-col gap-2.5">
 
-            {/* Become a Seller — mobile, only when logged in */}
-            {user && (
+            {/* Become a Seller — mobile */}
+            {(!user || !user.roles?.includes('seller')) && (
               <a
                 href="/become-seller"
                 className="block w-full text-center text-sm font-semibold text-orange-500 border border-orange-500/40 hover:bg-orange-600 hover:border-orange-600 hover:text-white py-2 rounded-sm transition-all"
