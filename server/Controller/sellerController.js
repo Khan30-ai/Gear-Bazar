@@ -4,25 +4,30 @@ import User from "../Models/User.js";
 import mongoose from "mongoose";
 
 //create seller (only user with role "seller")
-export const createSellerProfile = asyncHandler(async(req,res)=>{
-  const {shopName} = req.body;
+export const createSellerProfile = asyncHandler(async (req, res) => {
+  const {
+    shopName,
+    ownerName,
+    gstNumber,
+    phone,
+    address,
+    city,
+    state,
+    pincode,
+  } = req.body;
   const userId = req.user.id;
 
-  if(!shopName){
+  if (!shopName) {
     res.status(400);
     throw new Error("Shop name is required");
   }
   const user = await User.findById(userId);
-  if(!user) {
+  if (!user) {
     res.status(404);
     throw new Error("User not found");
   }
 
-  if(!user.roles.includes("seller")){   //ensure role is seller
-    res.status(403);
-    throw new Error("Only Seller users can create seller profile");
-  }
-  const existingSeller = await Seller.findOne({userId});
+  const existingSeller = await Seller.findOne({ userId });
   if (existingSeller) {
     res.status(409);
     throw new Error("Seller profile already exists");
@@ -30,10 +35,17 @@ export const createSellerProfile = asyncHandler(async(req,res)=>{
   const seller = await Seller.create({
     userId,
     shopName,
-    isApproved: false,
+    ownerName,
+    gstNumber,
+    phone,
+    address,
+    city,
+    state,
+    pincode,
+    status: "pending",
   });
   res.status(201).json({
-    message:"Seller profile created successfully, pending platform approval",
+    message: "Seller profile created successfully, pending platform approval",
     seller,
   });
 })
@@ -51,17 +63,17 @@ export const getMySellerProfile = asyncHandler(async (req, res) => {
 });
 
 //Update my seller profile
-export const updateMySellerProfile= asyncHandler(async(req,res)=>{
-  const {shopName} = req.body;
+export const updateMySellerProfile = asyncHandler(async (req, res) => {
+  const { shopName } = req.body;
 
-  const seller = await Seller.findOne({userId: req.user.id});
+  const seller = await Seller.findOne({ userId: req.user.id });
   if (!seller) {
     res.status(404);
     throw new Error("Seller profile not found");
   }
-  if(shopName) seller.shopName = shopName;
+  if (shopName) seller.shopName = shopName;
   await seller.save();
-  
+
   res.status(200).json({
     message: "Seller profile updated successfully",
     seller,
@@ -80,11 +92,11 @@ export const getAllSellers = asyncHandler(async (req, res) => {
 });
 
 //admin will approve all seller
-export const approveSeller= asyncHandler(async(req,res)=>{
-  const {id}= req.params;
+export const approveSeller = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-  if(!mongoose.Types.ObjectId.isValid(id)){
-     res.status(400);
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
     throw new Error("Invalid sellerId");
   }
 
@@ -94,9 +106,14 @@ export const approveSeller= asyncHandler(async(req,res)=>{
     throw new Error("Seller not found");
   }
 
-  seller.isApproved=true;
+  seller.status = "approved";
   await seller.save();
+  const user = await User.findById(seller.userId);
 
+  if (!user.roles.includes("seller")) {
+    user.roles.push("seller");
+    await user.save();
+  }
   res.status(200).json({
     message: "Seller approved successfully",
     sellerId: seller._id,
