@@ -29,3 +29,7 @@ build/
 *.swp
 *.bak
 *.tmp
+
+#graphifyy
+graphify-out/
+.agents/
