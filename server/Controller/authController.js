@@ -28,7 +28,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     roles: ["buyer"],
     isActive: true,
   });
-//auto login 
+  //auto login 
   const token = generateToken(user);
   res.status(201).json({
     message: "User registered successfully",
@@ -57,9 +57,9 @@ export const loginUser = asyncHandler(async (req, res) => {
     throw new Error("Invalid email or password");
   }
   if (!user.isActive) {
-  res.status(403);
-  throw new Error("Account is deactivated");
-}
+    res.status(403);
+    throw new Error("Account is deactivated");
+  }
 
 
   const isMatch = await bcrypt.compare(password, user.password);
@@ -111,9 +111,9 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   await user.save({ validateBeforeSave: false });
 
-  const resetURL = `${req.protocol}://${req.get(
-    "host"
-  )}/api/auth/reset-password/${resetToken}`;
+  const clientURL = process.env.CLIENT_URL || "http://localhost:5173";
+  const resetURL = `${clientURL}/reset-password/${resetToken}`;
+  console.log("Password Reset URL:", resetURL);
 
   const message = `
   <h2>Password Reset</h2>
@@ -123,15 +123,15 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   <p>This link will expire in 15 minutes.</p>
 `;
 
-await sendEmail({
-  to: user.email,
-  subject: "Reset your GearBazar password",
-  html: message,
-});
+  await sendEmail({
+    to: user.email,
+    subject: "Reset your GearBazar password",
+    html: message,
+  });
 
-res.status(200).json({
-  message: "Password reset link sent to email",
-});
+  res.status(200).json({
+    message: "Password reset link sent to email",
+  });
 });
 
 export const resetPassword = asyncHandler(async (req, res) => {
