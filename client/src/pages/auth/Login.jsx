@@ -8,7 +8,7 @@ export default function Login() {
     const [rememberMe, setRememberMe] = useState(false)
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
-    
+
     const { login } = useAuth()
     const navigate = useNavigate()
     const location = useLocation()
@@ -87,9 +87,9 @@ export default function Login() {
                                 />
                                 <span className="text-sm text-slate-500">Remember me</span>
                             </label>
-                            <a href="#" className="text-sm text-orange-600 hover:text-orange-700 font-medium transition-colors">
+                            <Link to="/forgot-password" className="text-sm text-orange-600 hover:text-orange-700 font-medium transition-colors">
                                 Forgot password?
-                            </a>
+                            </Link>
                         </div>
 
                         {error && (
@@ -114,7 +114,7 @@ export default function Login() {
                         </Link>
                     </p>
                 </div>
-                
+
                 <p className="text-center text-slate-500 text-xs mt-6">
                     Trusted by automotive businesses worldwide
                 </p>
