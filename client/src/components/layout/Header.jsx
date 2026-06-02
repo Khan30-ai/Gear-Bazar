@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../hooks/useCart";
 
@@ -52,9 +53,19 @@ export default function Header() {
           {/* Right Side: Links & CTAs (Desktop) */}
           <div className="hidden lg:flex items-center gap-6">
             <div className="flex items-center gap-5 text-sm font-medium">
-              <a href="/" className="text-orange-500 hover:text-orange-400 transition-colors">Home</a>
-              <a href="/about" className="text-slate-300 hover:text-white transition-colors">About Us</a>
-              <a href="/contact" className="text-slate-300 hover:text-white transition-colors">Contact Us</a>
+              <NavLink to="/" className={({ isActive }) =>
+                isActive
+                  ? "text-orange-500 font-semibold"
+                  : "text-slate-300 hover:text-orange-500"
+              }>Home</NavLink>
+              <NavLink to="/about" className={({ isActive }) =>
+                isActive
+                  ? "text-orange-500 font-semibold"
+                  : "text-slate-300 hover:text-orange-500"}>About Us</NavLink>
+              <NavLink to="/contact" className={({ isActive }) =>
+                isActive
+                  ? "text-orange-500 font-semibold"
+                  : "text-slate-300 hover:text-orange-500"}>Contact Us</NavLink>
             </div>
 
             <span className="h-5 w-[1px] bg-slate-800" />
