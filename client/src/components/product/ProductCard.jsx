@@ -2,7 +2,31 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 export default function ProductCard({ product, onAddToCart }) {
-  const { name, price, brand, aftermarket, imageSvg, category, partNumber, sellerName } = product;
+
+  const {
+    name,
+    price,
+    mrp,
+    brand,
+    partType,
+    category,
+    partNumber,
+    shopName,
+    stock,
+    warrantyMonths,
+    fitments,
+    images
+  } = product;
+
+  const sellerShopName =
+    product.sellerId?.shopName ||
+    product.shopName ||
+    "Verified Seller";
+
+  const discount =
+    mrp && mrp > price
+      ? Math.round(((mrp - price) / mrp) * 100)
+      : 0;
 
   return (
 
@@ -12,7 +36,14 @@ export default function ProductCard({ product, onAddToCart }) {
       <Link to={`/product/${product._id}`}>
         <div className="bg-slate-50 border-b border-slate-100 p-6 flex flex-col items-center justify-center relative h-40 rounded-t-md select-none">
           <div className="text-slate-400 w-16 h-16 flex items-center justify-center">
-            {imageSvg}
+            <img
+              src={
+                images?.[0] ||
+                "https://via.placeholder.com/300x200?text=GearBazar"
+              }
+              alt={name}
+              className="w-full h-full object-contain"
+            />
           </div>
           <span className="absolute top-2.5 left-2.5 bg-slate-950 text-white text-[10px] uppercase font-bold px-2.5 py-0.5 tracking-wider rounded-full border border-slate-800">
             {category}
@@ -25,22 +56,24 @@ export default function ProductCard({ product, onAddToCart }) {
         <div>
           {/* Brand and OEM/Aftermarket */}
           <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-            <span className="text-[10px] text-slate-600 uppercase px-2 py-0.5 bg-slate-50 border-b-2 border-slate-300 tracking-wide">
-              {brand || 'Bosch'}
-            </span>
-            <span className={`text-[10px] uppercase px-2 py-0.5 tracking-wide ${aftermarket
-              ? 'text-amber-700 bg-amber-50/60 border-b-2 border-amber-300'
-              : 'text-emerald-700 bg-emerald-50/60 border-b-2 border-emerald-300'
-              }`}>
-              {aftermarket ? 'Aftermarket' : 'OEM'}
+            <span
+              className={`text-[10px] uppercase px-2 py-0.5 tracking-wide ${partType === "AFTERMARKET"
+                ? "text-amber-700 bg-amber-50 border-b-2 border-amber-300"
+                : "text-emerald-700 bg-emerald-50 border-b-2 border-emerald-300"
+                }`}
+            >
+              {partType || "OEM"}
             </span>
           </div>
 
           {/* Part Number */}
           <Link to={`/product/${product._id}`}>
-            <span className="text-[11px] font-mono text-slate-400 block mb-1.5">
-              {partNumber}
-            </span>
+            <p className="text-[11px] text-slate-500 mb-2">
+              PART NUMBER{" "}
+              <span className="text-[11px] font-bold font-mono text-slate-900 block mb-1.5 md:text-[14px]">
+                {partNumber}
+              </span>
+            </p>
 
             {/* Part Name - bold */}
             <h4 className="font-bold text-slate-900 text-sm tracking-tight hover:text-orange-600 transition-colors line-clamp-2 min-h-[40px] mb-2.5">
@@ -48,23 +81,85 @@ export default function ProductCard({ product, onAddToCart }) {
             </h4>
           </Link>
 
+          {/*Fitment*/}
+          {fitments?.[0] && (
+            <p className="text-[11px] text-slate-500 mb-2">
+              FITS:{"    "}
+              <span className="font-semibold text-slate-800">
+                {fitments[0].brand} {fitments[0].model}
+              </span>
+              {fitments[0].yearFrom && fitments[0].yearTo && (
+                <span className="text-slate-400">
+                  {" "}
+                  ({fitments[0].yearFrom}-{fitments[0].yearTo})
+                </span>
+              )}
+            </p>
+          )}
+
           {/* Seller */}
-          <div className="flex items-center gap-1.5 mb-4 text-xs text-slate-500 px-2 py-1 rounded-sm w-fit">
-            <svg className="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          <div className="flex items-center gap-1.5 mb-4 text-xs text-slate-500">
+            <svg
+              className="w-3 h-3 text-slate-400 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"
+              />
             </svg>
-            <span>{sellerName || 'Kolkata Spares Hub'}</span>
+
+            <span>{sellerShopName}</span>
+
+            <span className="text-emerald-600 font-medium">
+              ✓ Verified
+            </span>
           </div>
         </div>
 
         {/* Price */}
         <div className="mt-auto pt-2.5 border-t border-slate-100">
-          <div className="flex items-baseline justify-between mb-3">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <span className="text-[10px] text-slate-500 block leading-none mb-0.5">Unit Price (GST Excl.)</span>
-              <span className="text-base font-bold text-slate-900">₹{price.toLocaleString('en-IN')}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold text-slate-900">
+                  ₹{price?.toLocaleString("en-IN")}
+                </span>
+
+                {mrp > price && (
+                  <span className="text-xs line-through text-slate-400">
+                    ₹{mrp?.toLocaleString("en-IN")}
+                  </span>
+                )}
+              </div>
+
+              {discount > 0 && (
+                <span className="text-[11px] text-emerald-600 font-semibold">
+                  {discount}% OFF
+                </span>
+              )}
             </div>
-            <span className="text-[10px] text-slate-400">MOQ: 5 pcs</span>
+
+            <div className="text-right">
+              <div
+                className={`text-[11px] font-medium ${stock > 0
+                  ? "text-emerald-600"
+                  : "text-red-600"
+                  }`}
+              >
+                {stock > 0 ? "In Stock" : "Out of Stock"}
+              </div>
+
+              {warrantyMonths > 0 && (
+                <div className="text-[10px] text-slate-500">
+                  {warrantyMonths}M Warranty
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Add to Cart */}
