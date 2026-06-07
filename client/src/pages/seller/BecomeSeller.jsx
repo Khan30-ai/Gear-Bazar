@@ -10,7 +10,7 @@ export default function BecomeSeller() {
     const [isLoading, setIsLoading] = useState(true);
     const [formData, setFormData] = useState({
         shopName: "",
-        ownerName: "",
+        ownerName: user?.name || "",
         gstNumber: "",
         phone: "",
         address: "",
@@ -117,6 +117,9 @@ export default function BecomeSeller() {
                             <div className="sm:col-span-2">
                                 <label htmlFor="gstNumber" className="block text-sm font-medium text-slate-900 mb-1.5">GST Number</label>
                                 <input type="text" id="gstNumber" value={formData.gstNumber} onChange={handleChange} className="w-full px-3 py-2 border border-slate-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 text-slate-900 placeholder-slate-400" placeholder="Optional" />
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Optional. Leave blank if not GST registered.
+                                </p>
                             </div>
 
                             <div className="sm:col-span-2">
