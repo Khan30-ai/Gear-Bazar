@@ -13,12 +13,13 @@ export const createdProduct = asyncHandler(async (req, res) => {
     category,
     subcategory,
     partNumber,
-    partNumberType,
+    partType,
     fitments,
     price,
+    mrp,
     stock,
     oemPartNumber,
-    aftermarketBrand,
+    brand,
     images,
   } = req.body;
 
@@ -32,25 +33,27 @@ export const createdProduct = asyncHandler(async (req, res) => {
     !category ||
     !subcategory ||
     !partNumber ||
-    !partNumberType ||
+    !partType ||
     price === undefined ||
+    mrp === undefined ||
     stock === undefined
   ) {
     res.status(400);
     throw new Error("Missing required product fields");
   }
   // Validate seller existence
-  const seller = await Seller.findById({ userId });
+  const seller = await Seller.findOne({ userId: req.user.id });
 
   if (!seller) {
     res.status(404);
     throw new Error("Seller not found");
   }
   //seller approval check
-  if (!seller.isApproved) {
+  if (seller.status !== "approved") {
     res.status(403);
     throw new Error("Seller is not approved to list products");
   }
+
 
   //fitment validation
   if (!Array.isArray(fitments) || fitments.length === 0) {
@@ -63,7 +66,7 @@ we have to make and then insert it into the product */
 
   const idempotencyKey = crypto
     .createHash("sha256")
-    .update(`${seller._id}-${partNumber}-${partNumberType}`)
+    .update(`${seller._id}-${partNumber}-${partType}`)
     .digest("hex");
 
   //create product
@@ -73,12 +76,13 @@ we have to make and then insert it into the product */
     category,
     subcategory,
     partNumber,
-    partNumberType,
+    partType,
     fitments,
     price,
+    mrp,
     stock,
     oemPartNumber,
-    aftermarketBrand,
+    brand,
     images,
     idempotencyKey,
   });
@@ -94,18 +98,28 @@ we have to make and then insert it into the product */
 });
 //get product
 export const getProducts = asyncHandler(async (req, res) => {
-  let { page, limit } = req.query;
+  console.log("[getProducts] req.user =", req.user);
+  console.log("[getProducts] roles =", req.user?.roles);
+  let { page, limit, view } = req.query;
   //deafults+sanitzation
   page = Math.max(parseInt(page) || 1, 1);
-  limit = Math.min(parseInt(limit) || 20, 20);
+  limit = Math.min(parseInt(limit) || 20, 100);
   const skip = (page - 1) * limit; //pagination maths if in page 2 then skip 20
 
   const roles = req.user?.roles || [];
   let filter = {};
 
+  // view=public forces buyer/public filter regardless of role.
+  // Used by the public storefront so logged-in sellers see all approved products
+  // instead of only their own listings.
+  if (view === "public") {
+    filter["approval.status"] = "approved";
+    console.log("[getProducts] Branch: PUBLIC override — approved products only");
+  }
   //Admin sees everything
-  if (roles.includes("admin")) {
+  else if (roles.includes("admin")) {
     filter = {};
+    console.log("[getProducts] Branch: ADMIN — returning all products (no filter)");
   }
   //Seller dashboard view
   else if (roles.includes("seller")) {
@@ -115,18 +129,20 @@ export const getProducts = asyncHandler(async (req, res) => {
       throw new Error("Seller profile not found");
     }
     filter.sellerId = seller._id;
+    console.log("[getProducts] Branch: SELLER — filtering by sellerId:", seller._id);
   }
 
   //buyer view (by default)
   else {
     filter["approval.status"] = "approved";
+    console.log("[getProducts] Branch: BUYER/PUBLIC — only approved products returned");
   }
 
   const products = await Product.find(filter)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
-    .populate("sellerId", "shopName");
+    .populate("sellerId", "shopName city state phone");
 
   const total = await Product.countDocuments(filter); //all ,matching products
   const totalPages = Math.ceil(total / limit);
@@ -149,7 +165,7 @@ export const getProductById = asyncHandler(async (req, res) => {
     throw new Error("Invalid product id");
   }
   //second is Fetch product
-  const product = await Product.findById(id).populate("sellerId", "shopName");
+  const product = await Product.findById(id).populate("sellerId", "shopName city state phone");
 
   if (!product) {
     res.status(404);
@@ -178,6 +194,20 @@ export const getProductById = asyncHandler(async (req, res) => {
     throw new Error("Product not available");
   }
   res.status(200).json({ product });
+});
+
+export const getFeaturedProducts = asyncHandler(async (req, res) => {
+
+  const products = await Product.find({
+    "approval.status": "approved"
+  })
+    .sort({ createdAt: -1 })
+    .limit(8)
+    .populate("sellerId", "shopName city state");
+
+  res.status(200).json({
+    products
+  });
 });
 
 {
@@ -297,7 +327,7 @@ export const updateProductStock = asyncHandler(async (req, res) => {
     res.status(409);
     throw new Error("Stock can only be updated for approved products");
   }
-  //seller can approve only own products
+  //seller can update only own products
   else if (req.user.roles.includes("seller")) {
     const seller = await Seller.findOne({ userId: req.user.id });
     if (!seller || product.sellerId.toString() !== seller._id.toString()) {
@@ -315,5 +345,105 @@ export const updateProductStock = asyncHandler(async (req, res) => {
     message: "Stock updated successfully",
     productId: product._id,
     stock: product.stock,
+  });
+});
+
+// Update Product Details (Seller)
+export const updateProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
+    throw new Error("Invalid product id");
+  }
+
+  const product = await Product.findById(id);
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  const seller = await Seller.findOne({ userId: req.user.id });
+  if (!seller) {
+    res.status(404);
+    throw new Error("Seller not found");
+  }
+
+  if (product.sellerId.toString() !== seller._id.toString()) {
+    res.status(403);
+    throw new Error("Not authorized to edit this product");
+  }
+
+  const {
+    name,
+    category,
+    subcategory,
+    partNumber,
+    partType,
+    fitments,
+    price,
+    stock,
+    oemPartNumber,
+    brand,
+    images,
+  } = req.body;
+
+  if (name) product.name = name;
+  if (category) product.category = category;
+  if (subcategory) product.subcategory = subcategory;
+  if (partNumber) product.partNumber = partNumber;
+  if (partType) product.partType = partType;
+  if (fitments) product.fitments = fitments;
+  if (price !== undefined) product.price = price;
+  if (stock !== undefined) product.stock = stock;
+  if (oemPartNumber !== undefined) product.oemPartNumber = oemPartNumber;
+  if (brand) product.brand = brand;
+  if (images) product.images = images;
+
+  // Reset to pending upon update
+  product.approval = {
+    status: "pending",
+    approvedAt: null,
+    rejectedAt: null,
+    rejectionReason: null,
+    lastActionBy: null
+  };
+
+  await product.save();
+
+  res.status(200).json({
+    message: "Product updated successfully and is pending approval",
+    product,
+  });
+});
+
+// Delete Product (Seller)
+export const deleteProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
+    throw new Error("Invalid product id");
+  }
+
+  const product = await Product.findById(id);
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  // Allow admin OR the owning seller to delete
+  if (!req.user.roles.includes("admin")) {
+    const seller = await Seller.findOne({ userId: req.user.id });
+    if (!seller || product.sellerId.toString() !== seller._id.toString()) {
+      res.status(403);
+      throw new Error("Not authorized to delete this product");
+    }
+  }
+
+  await Product.findByIdAndDelete(id);
+
+  res.status(200).json({
+    message: "Product deleted successfully",
   });
 });

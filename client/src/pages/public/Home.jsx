@@ -4,6 +4,7 @@ import Footer from '../../components/layout/Footer';
 import ProductCard from '../../components/product/ProductCard';
 import { Link, useNavigate } from "react-router-dom";
 import BRANDS_DATA from '../../data/cars.json';
+import { getFeaturedProducts } from '../../services/product.service';
 import LoginRequiredModal from '../../components/product/LoginRequiredModal';
 import Toast from '../../components/ui/Toast';
 import { useAuth } from '../../context/AuthContext';
@@ -151,163 +152,16 @@ const CATEGORIES = [
         )
     }
 ];
-
-const PRODUCTS_DATA = [
-    {
-        _id: '1',
-        name: 'Front Brake Pad Set (Premium Ceramic)',
-        price: 1850,
-        brand: 'Bosch',
-        aftermarket: true,
-        sellerName: 'Kolkata Spares Hub',
-        vehicle: 'Swift (2020-2024)',
-        category: 'Brakes',
-        partNumber: 'BP-MS-5021',
-        stockStatus: 'In Stock',
-        imageSvg: (
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path d="M3 10c0-3.3 4.03-6 9-6s9 2.7 9 6v4c0 3.3-4.03 6-9 6s-9-2.7-9-6v-4z" strokeWidth="1.5" />
-                <path d="M6 10h12v4H6z" strokeWidth="1.5" fill="currentColor" fillOpacity="0.1" />
-            </svg>
-        )
-    },
-    {
-        _id: '2',
-        name: 'Heavy Duty Clutch Plate & Cover Assembly',
-        price: 6400,
-        brand: 'Valeo',
-        aftermarket: false,
-        sellerName: 'Raju Auto Agency',
-        vehicle: 'Scorpio (2018-2023)',
-        category: 'Clutch',
-        partNumber: 'CL-MH-8812',
-        stockStatus: 'In Stock',
-        imageSvg: (
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <circle cx="12" cy="12" r="9" strokeWidth="1.5" />
-                <circle cx="12" cy="12" r="5" strokeWidth="1.5" strokeDasharray="3 2" />
-                <circle cx="12" cy="12" r="2.5" strokeWidth="2" />
-            </svg>
-        )
-    },
-    {
-        _id: '3',
-        name: 'Premium Cabin & Air Filter Combo Kit',
-        price: 850,
-        brand: 'Mahle',
-        aftermarket: true,
-        sellerName: 'City Motors & Spares',
-        vehicle: 'Creta (2020-2025)',
-        category: 'Filters',
-        partNumber: 'FL-HY-2340',
-        stockStatus: 'In Stock',
-        imageSvg: (
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <rect x="4" y="4" width="16" height="16" rx="1" strokeWidth="1.5" />
-                <path d="M8 4v16M12 4v16M16 4v16M4 8h16M4 12h16M4 16h16" strokeWidth="1" />
-            </svg>
-        )
-    },
-    {
-        _id: '4',
-        name: '12V B2B Alternator Assembly (90A)',
-        price: 8900,
-        brand: 'Lucas',
-        aftermarket: false,
-        sellerName: 'Bengal Automotive',
-        vehicle: 'Nexon (2019-2024)',
-        category: 'Electrical',
-        partNumber: 'EL-TT-3990',
-        stockStatus: 'Low Stock',
-        imageSvg: (
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <circle cx="12" cy="12" r="6" strokeWidth="1.5" />
-                <rect x="9" y="3" width="6" height="3" rx="0.5" strokeWidth="1.5" />
-                <path d="M12 9v6M9 12h6M16.5 16.5l2 2" strokeWidth="1.5" />
-            </svg>
-        )
-    },
-    {
-        _id: '5',
-        name: 'Engine Cylinder Piston Ring Set',
-        price: 3200,
-        brand: 'Mahle',
-        aftermarket: false,
-        sellerName: 'Giri Auto Parts',
-        vehicle: 'City (2017-2023)',
-        category: 'Engine',
-        partNumber: 'EN-HD-9021',
-        stockStatus: 'In Stock',
-        imageSvg: (
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <rect x="6" y="4" width="12" height="16" rx="1" strokeWidth="1.5" />
-                <path d="M6 8h12M6 11h12M6 14h12" strokeWidth="2" />
-            </svg>
-        )
-    },
-    {
-        _id: '6',
-        name: 'Double Platinum Spark Plug Kit (Pack of 4)',
-        price: 1150,
-        brand: 'NGK',
-        aftermarket: true,
-        sellerName: 'Howrah Motor House',
-        vehicle: 'Swift (2018-2024)',
-        category: 'Ignition',
-        partNumber: 'IG-MS-0042',
-        stockStatus: 'In Stock',
-        imageSvg: (
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <rect x="10" y="4" width="4" height="12" rx="0.5" strokeWidth="1.5" />
-                <path d="M12 16v4m-2 2h4M9 6h6M8 9h8" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-        )
-    },
-    {
-        _id: '7',
-        name: 'Front Gas Shock Absorber Assembly',
-        price: 2800,
-        brand: 'Monroe',
-        aftermarket: true,
-        sellerName: 'Supreme Car Spares',
-        vehicle: 'Creta (2020-2024)',
-        category: 'Suspension',
-        partNumber: 'SP-HY-5520',
-        stockStatus: 'In Stock',
-        imageSvg: (
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path d="M12 4v4m0 8v4M9 8h6M8 10h8v4H8z" strokeWidth="1.5" />
-                <path d="M10 14a2 2 0 004 0v-4" strokeWidth="1.5" />
-            </svg>
-        )
-    },
-    {
-        _id: '8',
-        name: 'Waterproof 12V 4-Pin Headlight Relay',
-        price: 350,
-        brand: 'Minda',
-        aftermarket: false,
-        sellerName: 'Auto Junction V',
-        vehicle: 'Nexon (2020-2025)',
-        category: 'Electrical',
-        partNumber: 'EL-TT-0199',
-        stockStatus: 'In Stock',
-        imageSvg: (
-            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <rect x="5" y="5" width="14" height="14" rx="1" strokeWidth="1.5" />
-                <path d="M9 5v14M15 5v14M5 12h14" strokeWidth="1" />
-            </svg>
-        )
-    }
-];
-
 export default function Home() {
     const [selectedBrand, setSelectedBrand] = useState('');
     const [selectedModel, setSelectedModel] = useState('');
     const [selectedYear, setSelectedYear] = useState('');
+    const [featuredProducts, setFeaturedProducts] = useState([]);
+    const [loadingProducts, setLoadingProducts] = useState(true);
     const [searchResultText, setSearchResultText] = useState('');
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
+
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -319,6 +173,24 @@ export default function Home() {
         console.log("Added to cart:", product);
         setToastMessage("Added to cart successfully!");
     };
+
+    useEffect(() => {
+        const loadProducts = async () => {
+            try {
+                const data = await getFeaturedProducts({
+                    limit: 8
+                });
+
+                setFeaturedProducts(data.products || []);
+            } catch (err) {
+                console.error("Failed to load featured products", err);
+            } finally {
+                setLoadingProducts(false);
+            }
+        };
+
+        loadProducts();
+    }, []);
 
     const handleFitmentSearch = (e) => {
         e.preventDefault();
@@ -545,9 +417,17 @@ export default function Home() {
 
                     {/* Grid Layout of 8 Products , which is also written above hardcoded */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        {PRODUCTS_DATA.map((product) => (
-                            <ProductCard key={product._id} product={product} onAddToCart={handleAddToCart} />
-                        ))}
+                        {loadingProducts ? (
+                            <p className="text-slate-500">Loading products...</p>
+                        ) : (
+                            featuredProducts.map((product) => (
+                                <ProductCard
+                                    key={product._id}
+                                    product={product}
+                                    onAddToCart={handleAddToCart}
+                                />
+                            ))
+                        )}
                     </div>
                 </div>
             </section>

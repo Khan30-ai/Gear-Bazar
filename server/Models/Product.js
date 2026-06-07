@@ -77,6 +77,23 @@ const ProductSchema = new Schema(
       required: true,
       min: 1,
     },
+    mrp: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+
+    reviewCount: {
+      type: Number,
+      default: 0,
+    },
 
     stock: {
       type: Number,
