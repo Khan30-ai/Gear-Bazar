@@ -1,23 +1,40 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
 
 export const CartContext = createContext();
 
+// Derives a user-specific localStorage key so carts are fully isolated per user.
+// Unauthenticated users share a guest key that is abandoned on login (their cart resets).
+const getCartKey = (userId) =>
+  userId ? `gearbazar_cart_${userId}` : 'gearbazar_cart_guest';
+
+const readCart = (key) => {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState(() => {     //to avoid reading local storage on every render
-    try {
-      const stored = localStorage.getItem('gearbazar_cart');
-      return stored ? JSON.parse(stored) : [];
-    } catch (err) {
-      console.warn("Failed to read cart from local storage", err);
-      return [];
-    }
-  });
+  const { user } = useAuth();
+  const cartKey = getCartKey(user?._id || user?.id);
+
+  // Re-initialise cart whenever the logged-in user changes (login / logout).
+  const [cartItems, setCartItems] = useState(() => readCart(cartKey));
 
   useEffect(() => {
-    localStorage.setItem('gearbazar_cart', JSON.stringify(cartItems));  //hydration pattern , will have to change in future
-  }, [cartItems]);
+    // Switch to the new user's cart whenever identity changes.
+    setCartItems(readCart(cartKey));
+  }, [cartKey]);
 
-  const addToCart = (product, quantity = 1) => {
+  // Persist on every change.
+  useEffect(() => {
+    localStorage.setItem(cartKey, JSON.stringify(cartItems));
+  }, [cartItems, cartKey]);
+
+  const addToCart = useCallback((product, quantity = 1) => {
     setCartItems(prev => {
       const existingItem = prev.find(item => item._id === product._id);
       if (existingItem) {
@@ -29,13 +46,13 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, { ...product, quantity }];
     });
-  };
+  }, []);
 
-  const removeFromCart = (productId) => {
+  const removeFromCart = useCallback((productId) => {
     setCartItems(prev => prev.filter(item => item._id !== productId));
-  };
+  }, []);
 
-  const updateQuantity = (productId, delta) => {
+  const updateQuantity = useCallback((productId, delta) => {
     setCartItems(prev => prev.map(item => {
       if (item._id === productId) {
         const newQty = Math.max(1, Math.min(item.stock || 99, item.quantity + delta));
@@ -43,15 +60,15 @@ export const CartProvider = ({ children }) => {
       }
       return item;
     }));
-  };
+  }, []);
 
-  const clearItem = (productId) => {
+  const clearItem = useCallback((productId) => {
     removeFromCart(productId);
-  };
+  }, [removeFromCart]);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setCartItems([]);
-  };
+  }, []);
 
   return (
     <CartContext.Provider value={{
