@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { startNetworkRequest, stopNetworkRequest } from '../utils/apiLoading';
 
 const api = axios.create({
     baseURL: 'http://localhost:5000/api',
@@ -6,6 +7,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
+        startNetworkRequest();
         const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -13,6 +15,18 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
+        stopNetworkRequest();
+        return Promise.reject(error);
+    }
+);
+
+api.interceptors.response.use(
+    (response) => {
+        stopNetworkRequest();
+        return response;
+    },
+    (error) => {
+        stopNetworkRequest();
         return Promise.reject(error);
     }
 );
