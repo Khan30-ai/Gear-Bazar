@@ -1,7 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-export default function ProductCard({ product, onAddToCart }) {
+export default function ProductCard({
+  product,
+  onAddToCart,
+  cartItems = [],
+  addedSet = new Set()
+}) {
 
   const {
     name,
@@ -11,7 +17,6 @@ export default function ProductCard({ product, onAddToCart }) {
     partType,
     category,
     partNumber,
-    shopName,
     stock,
     warrantyMonths,
     fitments,
@@ -27,6 +32,14 @@ export default function ProductCard({ product, onAddToCart }) {
     mrp && mrp > price
       ? Math.round(((mrp - price) / mrp) * 100)
       : 0;
+  const navigate = useNavigate();
+
+  const isInCart = cartItems?.some(
+    item =>
+      item.productId === product._id ||
+      item._id === product._id ||
+      item.product?._id === product._id
+  );
 
   return (
 
@@ -168,14 +181,34 @@ export default function ProductCard({ product, onAddToCart }) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+
+              if (isInCart) {
+                navigate("/cart");
+                return;
+              }
+
               onAddToCart?.(product);
             }}
-            className="w-full bg-slate-950 hover:bg-orange-600 text-white text-xs font-semibold py-2 px-3 rounded-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            className={`w-full text-white text-xs font-semibold py-2 px-3 rounded-sm transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer ${isInCart
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : "bg-slate-950 hover:bg-orange-600"
+              }`}
           >
-            <svg className="w-3.5 h-3.5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
             </svg>
-            Add to Cart
+
+            {isInCart ? "Go to Cart →" : "Add to Cart"}
           </button>
         </div>
       </div>

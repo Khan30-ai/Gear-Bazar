@@ -8,6 +8,7 @@ import { getFeaturedProducts } from '../../services/product.service';
 import LoginRequiredModal from '../../components/product/LoginRequiredModal';
 import Toast from '../../components/ui/Toast';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../hooks/useCart';
 
 // Custom scrollable dropdown component to handle long option lists
 function ScrollableSelect({ id, label, value, onChange, options, placeholder, disabled }) {
@@ -163,6 +164,7 @@ export default function Home() {
     const [toastMessage, setToastMessage] = useState("");
 
     const { user } = useAuth();
+    const { addToCart, cartItems } = useCart();
     const navigate = useNavigate();
 
     const handleAddToCart = (product) => {
@@ -170,7 +172,7 @@ export default function Home() {
             setShowLoginModal(true);
             return;
         }
-        console.log("Added to cart:", product);
+        addToCart(product, 1);
         setToastMessage("Added to cart successfully!");
     };
 
@@ -425,6 +427,7 @@ export default function Home() {
                                     key={product._id}
                                     product={product}
                                     onAddToCart={handleAddToCart}
+                                    cartItems={cartItems}
                                 />
                             ))
                         )}

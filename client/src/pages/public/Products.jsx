@@ -9,6 +9,7 @@ import Toast from '../../components/ui/Toast';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../hooks/useCart';
 import { getProducts } from '../../services/product.service';
+import ProductCard from '../../components/product/ProductCard.jsx';
 
 const BRANDS = Object.keys(BRANDS_DATA);
 
@@ -211,18 +212,6 @@ export default function Products() {
         }
         addToCart(product, 1);
         setToastMessage('Added to cart!');
-        setAddedSet(prev => {
-            const next = new Set(prev);
-            next.add(product._id);
-            return next;
-        });
-        setTimeout(() => {
-            setAddedSet(prev => {
-                const next = new Set(prev);
-                next.delete(product._id);
-                return next;
-            });
-        }, 1500);
     };
 
     // Reset pagination on filter change
@@ -975,197 +964,13 @@ export default function Products() {
                                     {currentItems.map((product) => {
                                         const discount = product.mrp ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
                                         return (
-                                            <div
+                                            <ProductCard
                                                 key={product._id}
-                                                className="bg-white border border-slate-200 text-slate-900 rounded-md flex flex-col justify-between hover:border-slate-400 hover:shadow-xs transition-all duration-200 group"
-                                            >
-
-                                                {/* Image Frame */}
-                                                <Link to={`/product/${product._id}`} className="block">
-                                                    <div className="bg-slate-50 border-b border-slate-100 p-6 flex flex-col items-center justify-center relative h-40 shrink-0 select-none overflow-hidden rounded-t-md">
-
-                                                        {/* Image SVG display or actual image */}
-                                                        <div className="text-slate-400 group-hover:scale-105 transition-transform duration-200 w-16 h-16 flex items-center justify-center">
-                                                            {product.image ? (
-                                                                <img
-                                                                    src={product.image}
-                                                                    alt={product.name}
-                                                                    className="object-contain max-h-full max-w-full"
-                                                                />
-                                                            ) : (
-                                                                getProductSVG(product.category)
-                                                            )}
-                                                        </div>
-
-                                                        <span className="absolute top-2.5 left-2.5 bg-slate-950 text-white text-[10px] uppercase font-bold px-2.5 py-0.5 tracking-wider rounded-full border border-slate-800">
-                                                            {product.category}
-                                                        </span>
-
-                                                        {product.stock <= 0 ? (
-                                                            <span className="absolute top-2.5 right-2.5 bg-red-600 text-white text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border border-red-700">
-                                                                Out of stock
-                                                            </span>
-                                                        ) : product.stock <= 5 ? (
-                                                            <span className="absolute top-2.5 right-2.5 bg-amber-500 text-white text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border border-amber-600">
-                                                                Low Stock
-                                                            </span>
-                                                        ) : null}
-                                                    </div>
-                                                </Link>
-
-                                                {/* Card Metadata / Body */}
-                                                <div className="p-4 flex-grow flex flex-col justify-between">
-                                                    <div>
-                                                        {/* Brand and OEM/Aftermarket */}
-                                                        <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-                                                            <span className="text-[10px] text-slate-600 uppercase px-2 py-0.5 bg-slate-50 border-b-2 border-slate-300 tracking-wide">
-                                                                {product.brand}
-                                                            </span>
-                                                            <span className={`text-[10px] uppercase px-2 py-0.5 tracking-wide ${product.aftermarket
-                                                                ? 'text-amber-700 bg-amber-50/60 border-b-2 border-amber-300'
-                                                                : 'text-emerald-700 bg-emerald-50/60 border-b-2 border-emerald-300'
-                                                                }`}>
-                                                                {product.aftermarket ? 'Aftermarket' : 'OEM'}
-                                                            </span>
-                                                        </div>
-
-                                                        {/* Part Number */}
-                                                        <span className="text-[11px] font-mono text-slate-400 block mb-1.5">
-                                                            <span className="text-slate-600 font-semibold tracking-wide">
-                                                                Part Number:
-                                                            </span>{' '}
-                                                            {product.partNumber}
-                                                        </span>
-
-                                                        {/* Part Name - bold */}
-                                                        <Link to={`/product/${product._id}`}>
-                                                            <h3 className="font-bold text-slate-900 text-sm tracking-tight line-clamp-2 min-h-[40px] group-hover:text-orange-600 transition-colors mb-2.5">
-                                                                {product.name}
-                                                            </h3>
-                                                        </Link>
-
-                                                        {/* Seller */}
-                                                        <div className="flex items-center gap-1.5 mb-4 text-xs text-slate-500 px-2 py-1 rounded-sm w-fit">
-                                                            <svg className="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                                            </svg>
-                                                            <span>{product.sellerName || 'Kolkata Spares Hub'}</span>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Price & Rating Section */}
-                                                    <div className="border-t border-slate-100 pt-3 mt-auto">
-
-                                                        {/* Rating and count */}
-                                                        <div className="flex items-center gap-1 mb-2.5">
-                                                            <div className="flex items-center text-amber-500">
-                                                                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                                </svg>
-                                                                <span className="text-[11px] font-bold text-slate-800 ml-0.5">
-                                                                    {product.rating ? product.rating.toFixed(1) : "0.0"}
-                                                                </span>
-                                                            </div>
-                                                            <span className="text-[10px] text-slate-400 font-medium">({product.reviewCount || 0} reviews)</span>
-                                                        </div>
-
-                                                        {/* Prices row */}
-                                                        <div className="flex items-baseline justify-between mb-3.5">
-                                                            <div>
-                                                                <span className="text-[10px] text-slate-400 block leading-none mb-0.5">Unit Rate (GST Excl.)</span>
-                                                                <div className="flex items-baseline gap-1.5">
-                                                                    <span className="text-base font-bold text-slate-950">₹{product.price.toLocaleString('en-IN')}</span>
-                                                                    {product.mrp && product.mrp > product.price && (
-                                                                        <span className="text-[11px] text-slate-400 line-through">₹{product.mrp}</span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            {discount > 0 && (
-                                                                <span className="bg-orange-50 text-orange-700 text-[10px] font-black px-1.5 py-0.5 border border-orange-100 rounded-xs">
-                                                                    {discount}% OFF
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Actions buttons */}
-                                                        <div className="flex gap-1.5">
-
-                                                            {/* Add to Cart button — shows flash state */}
-                                                            {(() => {
-                                                                const inCart = cartItems.some(i => i._id === product._id);
-                                                                const justAdded = addedSet.has(product._id);
-                                                                const outOfStock = product.stock <= 0;
-
-                                                                if (justAdded) {
-                                                                    return (
-                                                                        <button
-                                                                            type="button"
-                                                                            disabled
-                                                                            className="flex-1 bg-emerald-600 text-white text-[11px] font-bold py-2 px-2.5 rounded-sm flex items-center justify-center gap-1 transition-all duration-200"
-                                                                        >
-                                                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                                                                            </svg>
-                                                                            Added ✓
-                                                                        </button>
-                                                                    );
-                                                                }
-
-                                                                if (inCart && !outOfStock) {
-                                                                    return (
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={(e) => {
-                                                                                e.preventDefault();
-                                                                                e.stopPropagation();
-                                                                                handleAddToCart(product);
-                                                                            }}
-                                                                            className="flex-1 bg-orange-600 text-white hover:bg-orange-700 text-[11px] font-bold py-2 px-2.5 rounded-sm flex items-center justify-center gap-1 transition-all duration-200 cursor-pointer"
-                                                                        >
-                                                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                                            </svg>
-                                                                            In Cart
-                                                                        </button>
-                                                                    );
-                                                                }
-
-                                                                return (
-                                                                    <button
-                                                                        type="button"
-                                                                        disabled={outOfStock}
-                                                                        onClick={(e) => {
-                                                                            e.preventDefault();
-                                                                            e.stopPropagation();
-                                                                            handleAddToCart(product);
-                                                                        }}
-                                                                        className="flex-1 bg-slate-950 text-white hover:bg-orange-600 disabled:bg-slate-200 disabled:text-slate-400 text-[11px] font-bold py-2 px-2.5 rounded-sm transition-all duration-200 flex items-center justify-center gap-1 cursor-pointer"
-                                                                    >
-                                                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                                        </svg>
-                                                                        {outOfStock ? 'Out' : 'Add'}
-                                                                    </button>
-                                                                );
-                                                            })()}
-
-                                                            {/* View Details button */}
-                                                            <Link
-                                                                to={`/product/${product._id}`}
-                                                                className="bg-slate-100 text-slate-800 hover:bg-slate-200 text-[10px] font-bold py-2 px-2 rounded-sm border border-slate-200 flex items-center justify-center transition-colors shrink-0"
-                                                                title="View Details"
-                                                            >
-                                                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                                </svg>
-                                                            </Link>
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                            </div>
+                                                product={product}
+                                                onAddToCart={handleAddToCart}
+                                                cartItems={cartItems}
+                                                addedSet={addedSet}
+                                            />
                                         );
                                     })}
                                 </div>
