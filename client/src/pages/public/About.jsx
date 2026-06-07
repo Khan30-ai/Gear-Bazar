@@ -54,20 +54,32 @@ export default function About() {
             </div>
 
             {/* Right Column: Narrative content */}
-            <div className="lg:col-span-7 space-y-6 text-sm text-slate-600 leading-relaxed">
-              <p>
-                As an Electrical Engineering student with a strong interest in software development, I spent time observing the auto-electrical spare parts market around me. One thing that stood out was how workshops, mechanics, and spare parts dealers still relied heavily on offline networks. Every day, people would travel from shop to shop, take orders manually, and spend hours searching for the right electrical spare parts.
+            <div className="lg:col-span-7">
+              <div className="border-l-4 border-orange-600 pl-5 space-y-6 text-sm text-slate-600 leading-7">
+                <p>
+                  GearBazar started from a simple idea. While exploring the automotive spare parts market, I noticed how difficult it can be to find the right parts, compare options, and connect with reliable sellers in one place.
+                </p>
 
-                <p>That raised a simple question: if almost every industry is moving online, why is sourcing auto-electrical spare parts still so fragmented?</p>
-              </p>
-              <p>
-                GearBazar was born from that question. Starting from Kolkata and with a vision to serve customers across India, our goal is to simplify how vehicle owners, workshops, garages, and verified sellers connect with each other. We want buyers to find the right parts quickly, sellers to reach more customers, and workshops to source components with greater confidence.
-                <p>Today, GearBazar is being built with a simple mission: to make auto-electrical spare parts procurement more transparent, accessible, and efficient for everyone involved in the automotive ecosystem.</p>
-              </p>
-              <p>
-                Instead of relying on endless phone calls and physical visits, GearBazar aims to bring part discovery, seller verification, and product approvals into a single trusted platform. Every seller and product goes through an approval process to help maintain quality and reliability within the marketplace.
-              </p>
-              <p>Founded by Md Arshi Khan, GearBazar represents the intersection of engineering, technology, and entrepreneurship—built with the belief that even traditional industries deserve modern digital solutions.</p>
+                <p>
+                  Even today, many buyers and workshops rely on phone calls, personal contacts, and visiting multiple shops just to check availability or pricing. The process often feels fragmented and time-consuming.
+                </p>
+
+                <p>
+                  GearBazar aims to make that experience simpler by bringing product discovery, seller verification, and marketplace trust into a single platform.
+                </p>
+
+                <p>
+                  To maintain quality, both sellers and products go through an approval process before becoming visible on the marketplace.
+                </p>
+
+                <p className="pt-4 border-t border-slate-200">
+                  Founded and developed by
+                  <span className="font-semibold text-slate-900">
+                    {" "}Md Arshi Khan
+                  </span>,
+                  GearBazar is currently under active development and continues to evolve through real-world feedback, technical experimentation, and a focus on solving practical challenges in the automotive spare parts ecosystem.
+                </p>
+              </div>
             </div>
 
           </div>
