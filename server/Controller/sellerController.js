@@ -91,9 +91,10 @@ export const getAllSellers = asyncHandler(async (req, res) => {
   });
 });
 
-//admin will approve all seller
+//admin will approve or reject seller
 export const approveSeller = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const { status } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400);
@@ -106,11 +107,20 @@ export const approveSeller = asyncHandler(async (req, res) => {
     throw new Error("Seller not found");
   }
 
+  if (status === "rejected") {
+    seller.status = "rejected";
+    await seller.save();
+    return res.status(200).json({
+      message: "Seller rejected successfully",
+      sellerId: seller._id,
+    });
+  }
+
   seller.status = "approved";
   await seller.save();
   const user = await User.findById(seller.userId);
 
-  if (!user.roles.includes("seller")) {
+  if (user && !user.roles.includes("seller")) {
     user.roles.push("seller");
     await user.save();
   }

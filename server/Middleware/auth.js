@@ -4,8 +4,6 @@ import asyncHandler from "express-async-handler";
 // AUTHENTICATION middleware
 const auth = asyncHandler(async (req, res, next) => {
   let token;
-
-  console.log("AUTH HEADER:", req.headers.authorization);
   //take token from authorization header
   if (
     req.headers.authorization &&
