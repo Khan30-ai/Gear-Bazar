@@ -1,5 +1,6 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Home from '../pages/public/Home';
 import Products from '../pages/public/Products';
 import About from '../pages/public/About';
@@ -20,13 +21,23 @@ import UserManage from '../pages/admin/UserManage';
 import SellerLayout from '../components/layout/SellerLayout';
 import MyOrders from '../pages/seller/MyOrders';
 import MyProducts from '../pages/seller/MyProducts';
+import AddProduct from '../pages/seller/AddProduct';
 import SellerDashboard from '../pages/seller/SellerDashboard';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 
-function App() {
+function AppRoutes() {
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            fontSize: '0.95rem',
+          },
+        }}
+      />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
@@ -63,12 +74,17 @@ function App() {
             <Route index element={<SellerDashboard />} />
             <Route path="orders" element={<MyOrders />} />
             <Route path="products" element={<MyProducts />} />
-            {/* Seller routes placeholder */}
+            <Route path="products/add" element={<AddProduct />} />
+            <Route path="products/edit/:id" element={<AddProduct />} />
           </Route>
         </Route>
       </Routes>
     </BrowserRouter>
   );
+}
+
+function App() {
+  return <AppRoutes />;
 }
 
 export default App;
