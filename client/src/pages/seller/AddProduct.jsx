@@ -286,13 +286,7 @@ export default function AddProduct() {
                 </div>
 
 
-                {/* Media
-                <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">Media</h3>
-                <div className="mb-8">
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Product Image URL</label>
-                    <input type="url" name="imageUrl" value={formData.imageUrl} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-orange-500 focus:bg-white" placeholder="https://example.com/image.jpg" />
-                    <p className="text-xs text-slate-500 mt-1">Provide a direct link to a product image.</p>
-                </div> */}
+                {/* Media*/}
 
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-3">
