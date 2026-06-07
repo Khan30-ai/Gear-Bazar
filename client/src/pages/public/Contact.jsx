@@ -38,7 +38,7 @@ export default function Contact() {
     queryType: 'General Query',
     message: ''
   });
-  
+
   const [toastMessage, setToastMessage] = useState('');
   const [openFAQIndex, setOpenFAQIndex] = useState(null);
 
@@ -61,7 +61,7 @@ export default function Contact() {
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col font-sans antialiased text-slate-800">
-      
+
       {/* 1. Header Navigation */}
       <Header />
 
@@ -82,7 +82,7 @@ export default function Contact() {
       {/* 3. Contact Information Section */}
       <section className="relative -mt-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
+
           {/* Card 1: Email Support */}
           <div className="bg-white border border-slate-200 p-6 rounded-sm shadow-xs flex items-start gap-4 hover:border-orange-500/50 transition-colors duration-200">
             <div className="w-10 h-10 bg-slate-50 border border-slate-100 flex items-center justify-center rounded-sm text-orange-600 flex-shrink-0">
@@ -134,7 +134,7 @@ export default function Contact() {
       {/* 4. Contact Form and Office Locations Section */}
       <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          
+
           {/* Contact Form Column */}
           <div className="lg:col-span-7 bg-white border border-slate-200 p-6 sm:p-8 rounded-sm shadow-xs">
             <div className="border-l-4 border-orange-600 pl-3 mb-6">
@@ -142,7 +142,7 @@ export default function Contact() {
                 Send a Message
               </h2>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -233,7 +233,7 @@ export default function Contact() {
           </div>
 
           {/* Office Locations Column */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* <div className="lg:col-span-5 space-y-6">
             <div className="border-l-4 border-orange-600 pl-3">
               <h2 className="text-lg font-bold text-slate-900 tracking-tight uppercase">
                 Office Locations
@@ -241,8 +241,6 @@ export default function Contact() {
             </div>
             
             <div className="space-y-4">
-              
-              {/* Kolkata Card */}
               <div className="bg-white border border-slate-200 p-5 rounded-sm hover:border-slate-400 transition-colors duration-200">
                 <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                   Kolkata Office
@@ -255,34 +253,8 @@ export default function Contact() {
                 </p>
               </div>
 
-              {/* Mumbai Card */}
-              <div className="bg-white border border-slate-200 p-5 rounded-sm hover:border-slate-400 transition-colors duration-200">
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Mumbai Office
-                </h3>
-                <p className="text-xs text-slate-500 mt-2">
-                  Bandra Kurla Complex, Bandra East, Mumbai, Maharashtra 400051
-                </p>
-                <p className="text-[11px] text-slate-400 font-semibold mt-1">
-                  Phone: +91 22 5012 9876
-                </p>
-              </div>
-
-              {/* Delhi NCR Card */}
-              <div className="bg-white border border-slate-200 p-5 rounded-sm hover:border-slate-400 transition-colors duration-200">
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Delhi NCR Office
-                </h3>
-                <p className="text-xs text-slate-500 mt-2">
-                  Udyog Vihar Phase IV, Gurugram, Haryana 122015
-                </p>
-                <p className="text-[11px] text-slate-400 font-semibold mt-1">
-                  Phone: +91 124 6012 5543
-                </p>
-              </div>
-
             </div>
-          </div>
+          </div> */}
 
         </div>
       </section>
@@ -293,7 +265,7 @@ export default function Contact() {
           <h2 className="text-2xl font-black text-slate-900 tracking-tight text-center uppercase mb-8">
             Frequently Asked Questions
           </h2>
-          
+
           <div className="border-t border-slate-200">
             {FAQS.map((faq, index) => {
               const isOpen = openFAQIndex === index;
@@ -335,7 +307,7 @@ export default function Contact() {
           <p className="text-xs text-slate-400 mb-8 max-w-md mx-auto leading-relaxed">
             If you have urgent order cancellations, delivery queries, or high-priority catalog issues, contact us directly.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-12 text-sm">
             <div className="flex flex-col items-center gap-1">
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
