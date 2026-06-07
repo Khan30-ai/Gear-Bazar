@@ -5,17 +5,16 @@ export default function Footer() {
     <footer className="bg-slate-950 border-t border-slate-900 text-slate-400 text-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          
+
           {/* Column 1: Brand Info */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-orange-600 flex items-center justify-center rounded-sm font-bold text-lg text-white">
-                G
-              </div>
-              <span className="text-lg font-bold tracking-tight text-white">
-                Gear<span className="text-orange-500">Bazar</span>
-              </span>
-            </div>
+            <a href="/" className="flex items-center group">
+              <img
+                src="/logo-navbar.png"
+                alt="GearBazar"
+                className="w-44 md:w-64 h-auto"
+              />
+            </a>
             <p className="text-xs text-slate-400 leading-relaxed">
               India's premier B2B auto-parts marketplace. Connecting verified manufacturers and distributors with garages, workshops, and retailers across the country.
             </p>

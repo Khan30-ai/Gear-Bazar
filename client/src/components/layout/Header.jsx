@@ -20,17 +20,13 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
 
-          {/* Left Side: Logo */}
-          <div className="flex items-center flex-shrink-0">
-            <a href="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 bg-orange-600 flex items-center justify-center rounded-sm font-bold text-xl text-white tracking-wider">
-                G
-              </div>
-              <span className="text-xl font-bold tracking-tight text-white group-hover:text-orange-500 transition-colors">
-                Gear<span className="text-orange-500">Bazar</span>
-              </span>
-            </a>
-          </div>
+          <a href="/" className="flex items-center group">
+            <img
+              src="/logo-navbar.png"
+              alt="GearBazar"
+              className="w-44 md:w-64 h-auto"
+            />
+          </a>
 
           {/* Center: Search Bar */}
           <div className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-4">

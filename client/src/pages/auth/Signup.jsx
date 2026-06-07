@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useAuth } from "../../context/AuthContext"
 import { useNavigate, Link } from "react-router-dom"
+import { toast } from 'react-hot-toast'
 
 export default function Signup() {
     const [fullName, setFullName] = useState("")
@@ -16,18 +17,23 @@ export default function Signup() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setError("")
-        
+
         if (password !== confirmPassword) {
             setError("Passwords do not match")
             return
         }
-        
+
         setIsLoading(true)
         try {
             await register(fullName, email, password)
+            toast.dismiss()
+            toast.success('Account created successfully.')
             navigate("/")
         } catch (err) {
-            setError(err.response?.data?.message || "Failed to create account. Please try again.")
+            const message = err?.response?.data?.message || err?.message || "Unable to create account. Please try again."
+            setError(message)
+            toast.dismiss()
+            toast.error(message)
         } finally {
             setIsLoading(false)
         }
@@ -36,16 +42,19 @@ export default function Signup() {
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
             <div className="w-full max-w-md">
-                <div className="flex justify-center mb-8">
-                    <Link to="/" className="flex items-center gap-2 group">
-                        <div className="w-10 h-10 bg-slate-950 rounded-sm flex items-center justify-center">
-                            <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                            </svg>
+                <div className="flex justify-center">
+                    <Link to="/" className="flex items-center justify-center gap-3 group">
+                        <div className="mb-4 flex flex-col items-center">
+                            <img
+                                src="/Signin-logo.png"
+                                alt="GearBazar"
+                                className="h-20 w-auto mb-3"
+                            />
+
+                            <h1 className="text-4xl font-bold tracking-tight">
+                                Gear<span className="text-orange-600">Bazar</span>
+                            </h1>
                         </div>
-                        <span className="text-2xl font-bold text-slate-950 tracking-tight group-hover:text-orange-600 transition-colors">
-                            GearBazar
-                        </span>
                     </Link>
                 </div>
 
@@ -65,6 +74,7 @@ export default function Signup() {
                                 placeholder="John Doe"
                                 className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
                                 required
+                                disabled={isLoading}
                             />
                         </div>
 
@@ -78,6 +88,7 @@ export default function Signup() {
                                 placeholder="name@company.com"
                                 className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
                                 required
+                                disabled={isLoading}
                             />
                         </div>
 
@@ -91,6 +102,7 @@ export default function Signup() {
                                 placeholder="••••••••"
                                 className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
                                 required
+                                disabled={isLoading}
                             />
                         </div>
 
@@ -104,6 +116,7 @@ export default function Signup() {
                                 placeholder="••••••••"
                                 className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
                                 required
+                                disabled={isLoading}
                             />
                         </div>
 
