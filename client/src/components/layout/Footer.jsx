@@ -31,9 +31,6 @@ export default function Footer() {
                 <a href="/become-seller" className="hover:text-orange-500 transition-colors">Become a Seller</a>
               </li>
               <li>
-                <a href="/sellers" className="hover:text-orange-500 transition-colors">Verified Distributors</a>
-              </li>
-              <li>
                 <a href="/about" className="hover:text-orange-500 transition-colors">About GearBazar</a>
               </li>
             </ul>
@@ -68,8 +65,7 @@ export default function Footer() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <span>
-                  Sector V, Salt Lake City,<br />
-                  Kolkata, West Bengal 700091
+                  Kolkata, West Bengal
                 </span>
               </li>
               <li className="flex items-center gap-2.5">
