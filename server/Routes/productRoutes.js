@@ -2,7 +2,7 @@ import express from "express";
 import { createdProduct, approveProduct, rejectProduct, getProducts, getProductById, getFeaturedProducts, updateProductStock, updateProduct, deleteProduct } from "../Controller/productController.js";
 import auth from "../Middleware/auth.js";
 import authorize from "../Middleware/authorize.js";
-import optionalAuth from "../Middleware/optionalAuth.js";
+import optionalAuth from "../Middleware/optionalAuthMiddleware.js";
 
 const router = express.Router();
 
