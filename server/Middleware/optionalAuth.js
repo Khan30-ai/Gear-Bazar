@@ -7,9 +7,7 @@ import jwt from "jsonwebtoken";
  *   so role-based filtering in controllers (admin/seller/buyer) works correctly.
  * - If no token or an invalid token is present → req.user stays undefined
  *   and the request continues as a public/buyer request (no 401 thrown).
- *
- * Use this on public endpoints that also need to serve different data
- * depending on the caller's role (e.g. GET /products).
+ * 
  */
 const optionalAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
