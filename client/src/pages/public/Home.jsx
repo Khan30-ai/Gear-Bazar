@@ -377,24 +377,27 @@ export default function Home() {
                     </h2>
 
                 </div>
-
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
                     {CATEGORIES.map((cat) => (
-                        <a
+                        <div
                             key={cat.name}
-                            href={`/category/${cat.name.toLowerCase()}`}
-                            className="bg-white border border-slate-200 p-5 rounded-sm flex flex-col items-center justify-center text-center hover:border-slate-400 transition-colors duration-200 group"
+                            onClick={() =>
+                                navigate(`/products?category=${encodeURIComponent(cat.name)}`)
+                            }
+                            className="bg-white border border-slate-200 p-5 rounded-sm flex flex-col items-center justify-center text-center hover:border-slate-400 transition-colors duration-200 group cursor-pointer"
                         >
                             <div className="text-slate-400 group-hover:text-orange-600 transition-colors duration-200 mb-3.5">
                                 {cat.icon}
                             </div>
+
                             <span className="text-xs font-bold text-slate-900 tracking-tight block">
                                 {cat.name}
                             </span>
+
                             <span className="text-[10px] text-slate-400 font-medium block mt-1">
                                 {cat.count}
                             </span>
-                        </a>
+                        </div>
                     ))}
                 </div>
             </section>

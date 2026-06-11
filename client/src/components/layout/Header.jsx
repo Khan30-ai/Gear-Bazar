@@ -1,19 +1,86 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../hooks/useCart";
+import api from "../../services/api";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const searchRef = useRef(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const { user, logout } = useAuth(); // user null hai toh logged out
   const { cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        if (!debouncedQuery || debouncedQuery.length < 2) {
+          setSuggestions([]);
+          setShowSuggestions(false);
+          return;
+        }
+
+        const response = await api.get(
+          `/products/suggestions?q=${encodeURIComponent(debouncedQuery)}`
+        );
+
+        setSuggestions(response.data.suggestions || []);
+        setShowSuggestions(true);
+      } catch (err) {
+        console.error("Suggestions Error:", err);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    };
+
+    fetchSuggestions();
+    console.log("API HIT", debouncedQuery);
+  }, [debouncedQuery]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log('Searching for:', searchQuery);
+
+    const query = searchQuery.trim();
+
+    if (!query) return;
+
+    setShowSuggestions(false);
+    navigate(`/products?search=${encodeURIComponent(query)}`);
   };
+
 
   return (
     <nav className="bg-slate-950 border-b border-slate-800 text-slate-100">
@@ -29,7 +96,7 @@ export default function Header() {
           </a>
 
           {/* Center: Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-4">
+          <div ref={searchRef} className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-4 relative">
             <form onSubmit={handleSearch} className="w-full relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -40,9 +107,110 @@ export default function Header() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by Parts"
+                placeholder="Search by Part or Part No..."
                 className="w-full bg-slate-900 text-slate-100 placeholder-slate-400 pl-10 pr-4 py-2 border border-slate-800 rounded-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm transition-all"
               />
+              {showSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-0.5 bg-white border-x border-b border-slate-200 rounded-b-sm shadow-xl overflow-hidden z-50">
+
+                  {/* Header */}
+                  <div className="px-4 py-2 bg-slate-50 border-b border-slate-200">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                      Search Suggestions
+                    </p>
+                  </div>
+
+                  {/* Suggestions */}
+                  {suggestions.length > 0 ? (
+                    <>
+                      {suggestions.map((item) => (
+                        <button
+                          key={item._id}
+                          type="button"
+                          onClick={() => {
+                            setShowSuggestions(false);
+                            setSearchQuery(item.name);
+                            navigate(
+                              `/products?search=${encodeURIComponent(item.name)}`
+                            );
+                          }}
+                          className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-200 transition-colors border-b border-slate-100 last:border-b-0"
+                        >
+                          <div className="flex items-center gap-3">
+                            {/* Search Icon */}
+                            <div className="flex-shrink-0">
+                              <svg
+                                className="w-4 h-4 text-slate-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                />
+                              </svg>
+                            </div>
+
+                            {/* Text */}
+                            <div className="text-left">
+                              <div className="text-sm font-medium text-slate-900">
+                                {item.name}
+                              </div>
+
+                              <div className="text-xs text-slate-500">
+                                {item.brand} • {item.partNumber}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+
+                      {/* View All */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSuggestions(false);
+                          navigate(
+                            `/products?search=${encodeURIComponent(searchQuery)}`
+                          );
+                        }}
+                        className="w-full px-4 py-3 text-left bg-slate-50 hover:bg-slate-200 text-orange-600 text-sm font-medium"
+                      >
+                        View all results for "{searchQuery}" →
+                      </button>
+                    </>
+                  ) : (
+                    <div className="p-6 text-center">
+                      <div className="text-slate-400 mb-2">
+                        <svg
+                          className="w-8 h-8 mx-auto"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.8}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
+                        </svg>
+                      </div>
+
+                      <p className="text-sm font-medium text-slate-700">
+                        No matching parts found
+                      </p>
+
+                      <p className="text-xs text-slate-500 mt-1">
+                        Try part number, brand name, or category
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </form>
           </div>
 
