@@ -25,6 +25,7 @@ import AddProduct from '../pages/seller/AddProduct';
 import SellerDashboard from '../pages/seller/SellerDashboard';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
+import NotFound from '../pages/errors/NotFound';
 
 function AppRoutes() {
   return (
@@ -78,6 +79,9 @@ function AppRoutes() {
             <Route path="products/edit/:id" element={<AddProduct />} />
           </Route>
         </Route>
+
+        {/* 404 Catch-all */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
