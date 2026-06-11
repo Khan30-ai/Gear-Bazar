@@ -1,5 +1,5 @@
 import express from "express";
-import { createdProduct, approveProduct, rejectProduct, getProducts, getProductById, getFeaturedProducts, updateProductStock, updateProduct, deleteProduct } from "../Controller/productController.js";
+import { createdProduct, approveProduct, rejectProduct, getProducts, getProductSuggestions, getProductById, getFeaturedProducts, updateProductStock, updateProduct, deleteProduct } from "../Controller/productController.js";
 import auth from "../Middleware/auth.js";
 import authorize from "../Middleware/authorize.js";
 import optionalAuth from "../Middleware/optionalAuthMiddleware.js";
@@ -13,6 +13,7 @@ router.post("/", auth, authorize("seller", "admin"), createdProduct);
 // but does NOT block unauthenticated buyers. The controller branches on req.user.roles.
 router.get("/", optionalAuth, getProducts);
 router.get("/featured", getFeaturedProducts);
+router.get("/suggestions", getProductSuggestions);
 router.get("/:id", optionalAuth, getProductById);
 router.put("/:id", auth, authorize("seller", "admin"), updateProduct);
 router.delete("/:id", auth, authorize("seller", "admin"), deleteProduct);

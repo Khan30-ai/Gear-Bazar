@@ -100,7 +100,7 @@ we have to make and then insert it into the product */
 export const getProducts = asyncHandler(async (req, res) => {
   console.log("[getProducts] req.user =", req.user);
   console.log("[getProducts] roles =", req.user?.roles);
-  let { page, limit, view } = req.query;
+  let { page, limit, view, search, category } = req.query;
   //deafults+sanitzation
   page = Math.max(parseInt(page) || 1, 1);
   limit = Math.min(parseInt(limit) || 20, 100);
@@ -137,6 +137,21 @@ export const getProducts = asyncHandler(async (req, res) => {
     filter["approval.status"] = "approved";
     console.log("[getProducts] Branch: BUYER/PUBLIC — only approved products returned");
   }
+  // Search filter
+  if (search) {
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { partNumber: { $regex: search, $options: "i" } },
+      { brand: { $regex: search, $options: "i" } },
+      { category: { $regex: search, $options: "i" } },
+      { subcategory: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  // Category filter
+  if (category) {
+    filter.category = { $regex: category, $options: "i" };
+  }
 
   const products = await Product.find(filter)
     .sort({ createdAt: -1 })
@@ -154,7 +169,32 @@ export const getProducts = asyncHandler(async (req, res) => {
     total,
     totalPages,
   });
-}); //sarch and category filter will be implemented here
+}); //search and category filter will be implemented here
+
+export const getProductSuggestions = asyncHandler(async (req, res) => {
+  const { q } = req.query;
+
+  if (!q || q.trim().length < 2) {
+    return res.status(200).json({
+      suggestions: [],
+    });
+  }
+
+  const suggestions = await Product.find({
+    "approval.status": "approved",
+    $or: [
+      { name: { $regex: q, $options: "i" } },
+      { partNumber: { $regex: q, $options: "i" } },
+      { brand: { $regex: q, $options: "i" } },
+    ],
+  })
+    .select("name partNumber brand")
+    .limit(5);
+
+  res.status(200).json({
+    suggestions,
+  });
+});
 
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
