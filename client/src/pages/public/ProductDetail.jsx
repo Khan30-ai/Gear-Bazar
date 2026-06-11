@@ -27,6 +27,7 @@ import { useCart } from '../../hooks/useCart';
 // import PRODUCTS from '../../data/products.js';
 import { useParams } from 'react-router-dom'
 import { getProductById } from "../../services/product.service";
+import { ProductNotFound } from "../errors"
 
 export default function ProductDetails() {
     const navigate = useNavigate()
@@ -73,25 +74,7 @@ export default function ProductDetails() {
         );
     }
     if (!product) {
-        return (
-            <>
-                <Header />
-                <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                    <div className="text-center">
-                        <h1 className="text-xl font-semibold text-slate-900 mb-2">
-                            Product Not Found
-                        </h1>
-                        <Link
-                            to="/"
-                            className="text-orange-600 hover:text-orange-700 text-sm font-medium"
-                        >
-                            Go back to Home
-                        </Link>
-                    </div>
-                </div>
-                <Footer />
-            </>
-        )
+        return <ProductNotFound />
     }
 
     const {
@@ -476,11 +459,10 @@ export default function ProductDetails() {
                                     <button
                                         onClick={handleAddToCart}
                                         disabled={isOutOfStock || addedToCart}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-3 text-white text-sm font-medium rounded-sm transition-all duration-200 ${
-                                            addedToCart
+                                        className={`flex-1 flex items-center justify-center gap-2 py-3 text-white text-sm font-medium rounded-sm transition-all duration-200 ${addedToCart
                                                 ? 'bg-emerald-600 cursor-default'
                                                 : 'bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed'
-                                        }`}
+                                            }`}
                                     >
                                         {addedToCart ? (
                                             <>
@@ -599,11 +581,10 @@ export default function ProductDetails() {
                     <button
                         onClick={handleAddToCart}
                         disabled={isOutOfStock || addedToCart}
-                        className={`px-6 py-2.5 text-white text-sm font-medium rounded-sm transition-all duration-200 ${
-                            addedToCart
+                        className={`px-6 py-2.5 text-white text-sm font-medium rounded-sm transition-all duration-200 ${addedToCart
                                 ? 'bg-emerald-600 cursor-default'
                                 : 'bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed'
-                        }`}
+                            }`}
                     >
                         {addedToCart ? 'Added ✓' : 'Add to Cart'}
                     </button>

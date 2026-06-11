@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../hooks/useCart';
 import { getProducts } from '../../services/product.service';
 import ProductCard from '../../components/product/ProductCard.jsx';
+import NoSearchResults from "../errors/NoSearchResults";
 
 
 const BRANDS = Object.keys(BRANDS_DATA);
@@ -141,6 +142,11 @@ export default function Products() {
     const search = searchParams.get("search");
     const category = searchParams.get("category");
 
+    // Whenever the URL search changes, update the page search input state too.
+    useEffect(() => {
+        setSearchQuery(search || "");
+    }, [search]);
+
     // Track per-product "just added" flash state (productId → true for 1.5s)
     const [addedSet, setAddedSet] = useState(new Set());
 
@@ -186,6 +192,7 @@ export default function Products() {
     // Fetch products from API on mount
     // view=public ensures sellers browsing the storefront see all approved products,
     // not just their own listings (which is what the seller dashboard uses).
+
     useEffect(() => {
         const fetchProductsData = async () => {
             try {
@@ -458,6 +465,17 @@ export default function Products() {
         setSelectedBrand(e.target.value);
         setSelectedModel('');
     };
+
+    // If the search request finished successfully but returned zero products,
+    // show the dedicated NoSearchResults page instead of the normal catalog layout.
+    if (
+        !loading &&
+        !error &&
+        currentItems.length === 0 &&
+        searchQuery.trim()
+    ) {
+        return <NoSearchResults searchTerm={searchQuery} />;
+    }
 
     return (
         <div className="bg-slate-50 min-h-screen flex flex-col font-sans antialiased text-slate-800">
