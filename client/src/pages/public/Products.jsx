@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import BRANDS_DATA from '../../data/cars.json';
 import LoginRequiredModal from '../../components/product/LoginRequiredModal.jsx';
-import { useNavigate } from 'react-router-dom';
 import Toast from '../../components/ui/Toast';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../hooks/useCart';
 import { getProducts } from '../../services/product.service';
 import ProductCard from '../../components/product/ProductCard.jsx';
+
 
 const BRANDS = Object.keys(BRANDS_DATA);
 
@@ -135,7 +135,11 @@ export default function Products() {
     const [toastMessage, setToastMessage] = useState("")
     const { user } = useAuth();
     const { addToCart, cartItems } = useCart();
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate()
+
+    const search = searchParams.get("search");
+    const category = searchParams.get("category");
 
     // Track per-product "just added" flash state (productId → true for 1.5s)
     const [addedSet, setAddedSet] = useState(new Set());
@@ -186,7 +190,7 @@ export default function Products() {
         const fetchProductsData = async () => {
             try {
                 setLoading(true);
-                const data = await getProducts({ limit: 100, view: 'public' });
+                const data = await getProducts({ limit: 100, view: 'public', search, category });
                 const standardizedData = (data.products || []).map(p => ({
                     ...p,
                     _id: String(p._id || p.id)
@@ -202,9 +206,9 @@ export default function Products() {
         };
 
         fetchProductsData();
-    }, []);
+    }, [search, category]);
 
-    // Per-product add-to-cart handler with 1.5 s "just added" flash
+    // add to cart
     const handleAddToCart = (product) => {
         if (!user) {
             setShowLoginModal(true);
