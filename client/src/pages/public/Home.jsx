@@ -196,12 +196,14 @@ export default function Home() {
 
     const handleFitmentSearch = (e) => {
         e.preventDefault();
+
         if (!selectedBrand || !selectedModel || !selectedYear) {
-            setSearchResultText('Please select Brand, Model, and Year.');
+            setSearchResultText("Please select Brand, Model, and Year.");
             return;
         }
-        setSearchResultText(
-            `Showing custom fitment catalog for: ${selectedBrand} > ${selectedModel} (${selectedYear})`
+
+        navigate(
+            `/products?brand=${encodeURIComponent(selectedBrand)}&model=${encodeURIComponent(selectedModel)}&year=${selectedYear}`
         );
     };
 

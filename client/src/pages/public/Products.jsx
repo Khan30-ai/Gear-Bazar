@@ -142,6 +142,11 @@ export default function Products() {
     const search = searchParams.get("search");
     const category = searchParams.get("category");
 
+    const urlBrand = searchParams.get("brand");
+    const urlModel = searchParams.get("model");
+    const urlYear = searchParams.get("year");
+
+
     // Whenever the URL search changes, update the page search input state too.
     useEffect(() => {
         setSearchQuery(search || "");
@@ -155,6 +160,9 @@ export default function Products() {
     const [selectedBrand, setSelectedBrand] = useState('');
     const [selectedModel, setSelectedModel] = useState('');
     const [selectedYear, setSelectedYear] = useState('');
+    const activeBrand = urlBrand || selectedBrand;
+    const activeModel = urlModel || selectedModel;
+    const activeYear = urlYear || selectedYear;
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [selectedManufacturers, setSelectedManufacturers] = useState([]);
     const [priceRange, setPriceRange] = useState(20000);
@@ -353,30 +361,25 @@ export default function Products() {
             }
         }
 
-        // 2. Vehicle Brand Filter
-        if (selectedBrand) {
-            const brandModels = Object.keys(BRANDS_DATA[selectedBrand] || []);
-            // If a model is also selected, check that specific model compatibility
-            if (selectedModel) {
-                if (!product.compatibleVehicles.includes(selectedModel)) {
-                    return false;
-                }
-            } else {
-                // Check if product is compatible with ANY model of that brand
-                const intersects = product.compatibleVehicles.some((model) =>
-                    brandModels.includes(model)
-                );
-                if (!intersects) {
-                    return false;
-                }
-            }
-        }
+        // Vehicle Compatibility Filter
+        if (activeBrand || activeModel || activeYear) {
+            const matchesFitment = product.fitments?.some((fitment) => {
+                const brandMatch =
+                    !activeBrand || fitment.brand === activeBrand
 
-        // 3. Vehicle Year Filter
-        if (selectedYear) {
-            const hasMatchingYear = product.compatibleYears?.includes(Number(selectedYear));
+                const modelMatch =
+                    !activeModel || fitment.model === activeModel
 
-            if (!hasMatchingYear) {
+                const yearMatch =
+                    !activeYear ||
+                    (
+                        Number(activeYear) >= fitment.yearFrom &&
+                        Number(activeYear) <= fitment.yearTo
+                    );
+                return brandMatch && modelMatch && yearMatch;
+            });
+
+            if (!matchesFitment) {
                 return false;
             }
         }
