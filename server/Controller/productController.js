@@ -222,22 +222,22 @@ export const getProductById = asyncHandler(async (req, res) => {
     return res.status(200).json({ product });
   }
 
-  //fourth is that seller can see own product and status
+  // fourth is Seller can always see own product
   if (roles.includes("seller")) {
     const seller = await Seller.findOne({ userId: req.user.id });
+
     if (seller && product.sellerId._id.toString() === seller._id.toString()) {
       return res.status(200).json({ product });
     }
-    res.status(403);
-    throw new Error("Not allowed to view this product");
   }
 
-  //fifth is that buyer can see only approved product
+  // fifth is buyer + seller can see products only if approved
   if (product.approval.status !== "approved") {
     res.status(403);
     throw new Error("Product not available");
   }
-  res.status(200).json({ product });
+
+  return res.status(200).json({ product });
 });
 
 export const getFeaturedProducts = asyncHandler(async (req, res) => {
