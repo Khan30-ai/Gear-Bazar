@@ -11,10 +11,46 @@ export default function Header() {
   const [suggestions, setSuggestions] = useState([]);
   const searchRef = useRef(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { user, logout } = useAuth(); // user null hai toh logged out
   const { cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const navigate = useNavigate();
+
+  const role = user?.roles?.includes("admin")
+    ? "admin"
+    : user?.roles?.includes("seller")
+      ? "seller"
+      : "buyer";
+
+  const displayName =
+    role === "admin"
+      ? "System Administrator"
+      : user?.name || "User";
+
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      console.log("Clicked:", event.target);
+
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target)
+      ) {
+        console.log("Outside click detected");
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () =>
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -258,23 +294,100 @@ export default function Header() {
                       {cartCount}
                     </span>
                   </a>
-                  <a
-                    href="/profile"
-                    className="p-1 text-slate-300 hover:text-white transition-colors"
-                    aria-label="Profile"
-                  >
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                    </svg>
+                  <div className="relative" ref={profileRef}>
+                    <button
+                      type="button"
+                      onClick={() => setShowProfileMenu(prev => !prev)}
+                      className="p-2 border border-slate-800 hover:border-slate-700 rounded-sm text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                      aria-label="Profile"
+                    >
+                      <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </button>
+                    {showProfileMenu && (
+                      <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-lg shadow-xl z-50">
+                        <div className="p-4 border-b border-slate-800">
+                          <p className="text-white font-semibold">
+                            {displayName}
+                          </p>
+                          <p className="text-xs text-slate-400 capitalize mt-1">
+                            {role}
+                          </p>
+                        </div>
 
-                  </a>
+                        <div className="py-2">
+                          {role === "buyer" && (
+                            <>
+                              <button
+                                onClick={() => navigate('/profile')}
+                                className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800">
+                                My Profile
+                              </button>
 
-                  <button
+                              <button
+                                onClick={() => navigate('/orders')}
+                                className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800">
+                                My Orders
+                              </button>
+                            </>
+                          )}
+
+                          {role === "seller" && (
+                            <>
+                              <button
+                                onClick={() => navigate('/seller')}
+                                className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800">
+                                Seller Dashboard
+                              </button>
+
+                              <button
+                                onClick={() => navigate('/profile')}
+                                className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800">
+                                My Profile
+                              </button>
+                            </>
+                          )}
+
+                          {role === "admin" && (
+                            <>
+                              <button
+                                onClick={() => navigate('/admin')}
+                                className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800">
+                                Admin Dashboard
+                              </button>
+
+                              <button
+                                onClick={() => navigate('/profile')}
+                                className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800">
+                                My Profile
+                              </button>
+                            </>
+                          )}
+
+                          <button
+                            onClick={logout}
+                            className="w-full text-left px-4 py-2 text-red-400 hover:bg-slate-800"
+                          >
+                            Logout
+                          </button>
+
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* <button
                     onClick={logout}
                     className="bg-slate-800 text-white hover:bg-slate-700 text-sm font-semibold px-4 py-1.5 rounded-sm transition-colors cursor-pointer"
                   >
                     Logout
-                  </button>
+                  </button> */}
                 </div>
               ) : (
                 // Logged OUT — login + signup
@@ -370,30 +483,82 @@ export default function Header() {
 
             {user ? (
               // Logged IN mobile
-              <div className="flex items-center gap-3">
+              <div className="bg-slate-900 border border-slate-800 rounded-sm p-3">
 
-                <button
-                  onClick={logout}
-                  className="flex-1 text-center bg-slate-800 text-white hover:bg-slate-700 text-sm font-semibold py-2 rounded-sm transition-colors"
-                >
-                  Logout
-                </button>
+                <div className="mb-3">
+                  <p className="text-white font-semibold">
+                    {displayName}
+                  </p>
 
-                <a
-                  href="/profile"
-                  className="p-2 border border-slate-800 hover:border-slate-700 rounded-sm text-slate-300 hover:text-white flex items-center justify-center transition-colors"
-                  aria-label="Profile"
-                >
-                  <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </a>
+                  <p className="text-xs text-slate-400 capitalize">
+                    {role}
+                  </p>
+                </div>
 
+                <div className="flex flex-col gap-1">
+
+                  {role === "buyer" && (
+                    <>
+                      <button
+                        onClick={() => navigate("/profile")}
+                        className="text-left px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-sm"
+                      >
+                        My Profile
+                      </button>
+
+                      <button
+                        onClick={() => navigate("/orders")}
+                        className="text-left px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-sm"
+                      >
+                        My Orders
+                      </button>
+                    </>
+                  )}
+
+                  {role === "seller" && (
+                    <>
+                      <button
+                        onClick={() => navigate("/seller")}
+                        className="text-left px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-sm"
+                      >
+                        Seller Dashboard
+                      </button>
+
+                      <button
+                        onClick={() => navigate("/profile")}
+                        className="text-left px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-sm"
+                      >
+                        My Profile
+                      </button>
+                    </>
+                  )}
+
+                  {role === "admin" && (
+                    <>
+                      <button
+                        onClick={() => navigate("/admin")}
+                        className="text-left px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-sm"
+                      >
+                        Admin Dashboard
+                      </button>
+
+                      <button
+                        onClick={() => navigate("/profile")}
+                        className="text-left px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-sm"
+                      >
+                        My Profile
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    onClick={logout}
+                    className="text-left px-3 py-2 text-sm text-red-400 hover:bg-slate-800 rounded-sm"
+                  >
+                    Logout
+                  </button>
+
+                </div>
               </div>
             ) : (
               // Logged OUT mobile
