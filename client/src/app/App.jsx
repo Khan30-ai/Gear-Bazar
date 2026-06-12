@@ -36,6 +36,7 @@ function AppRoutes() {
           duration: 3000,
           style: {
             fontSize: '0.95rem',
+            marginTop: '70px'
           },
         }}
       />
