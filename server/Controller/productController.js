@@ -21,6 +21,8 @@ export const createdProduct = asyncHandler(async (req, res) => {
     oemPartNumber,
     brand,
     images,
+    description,
+    warrantyMonths,
   } = req.body;
 
   //seller id will come from jwt
@@ -84,6 +86,8 @@ we have to make and then insert it into the product */
     oemPartNumber,
     brand,
     images,
+    description,
+    warrantyMonths,
     idempotencyKey,
   });
 
