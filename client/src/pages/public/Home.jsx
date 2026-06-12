@@ -55,8 +55,8 @@ function ScrollableSelect({ id, label, value, onChange, options, placeholder, di
                             <button
                                 type="button"
                                 onClick={() => { onChange(''); setIsOpen(false); }}
-                                className={`w-full text-left px-3.5 py-2 text-sm hover:bg-orange-50 hover:text-orange-700 transition-colors cursor-pointer
-                                    ${!value ? 'bg-orange-50 text-orange-700 font-medium' : 'text-slate-500'}`}
+                                className={`w-full text-left px-3.5 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer
+                                    ${!value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-500'}`}
                             >
                                 {placeholder}
                             </button>
@@ -66,8 +66,8 @@ function ScrollableSelect({ id, label, value, onChange, options, placeholder, di
                                 <button
                                     type="button"
                                     onClick={() => { onChange(opt); setIsOpen(false); }}
-                                    className={`w-full text-left px-3.5 py-2 text-sm hover:bg-orange-50 hover:text-orange-700 transition-colors cursor-pointer
-                                        ${value === opt ? 'bg-orange-50 text-orange-700 font-medium' : 'text-slate-900'}`}
+                                    className={`w-full text-left px-3.5 py-2 text-sm hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer
+                                        ${value === opt ? 'bg-blue-100 text-blue-700 font-medium' : 'text-slate-900'}`}
                                 >
                                     {opt}
                                 </button>
