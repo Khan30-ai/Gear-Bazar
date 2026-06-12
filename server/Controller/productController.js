@@ -430,6 +430,8 @@ export const updateProduct = asyncHandler(async (req, res) => {
     oemPartNumber,
     brand,
     images,
+    description,
+    warrantyMonths
   } = req.body;
 
   if (name) product.name = name;
@@ -443,6 +445,8 @@ export const updateProduct = asyncHandler(async (req, res) => {
   if (oemPartNumber !== undefined) product.oemPartNumber = oemPartNumber;
   if (brand) product.brand = brand;
   if (images) product.images = images;
+  if (description) product.description = description;
+  if (warrantyMonths !== undefined) product.warrantyMonths = warrantyMonths;
 
   // Reset to pending upon update
   product.approval = {
