@@ -205,6 +205,7 @@ export default function ProductDetails() {
     }
 
     const CategoryIcon = categoryIcons[category] || categoryIcons.default
+    console.log("PRODUCT DATA:", product);
 
     return (
         <>
@@ -393,7 +394,16 @@ export default function ProductDetails() {
                                     </div>
                                 </div>
                             </div>
+                            {/* Product Description */}
+                            <div className="bg-white border border-slate-200 rounded-sm p-4">
+                                <h3 className="text-sm font-semibold text-slate-900 mb-2">
+                                    Product Description
+                                </h3>
 
+                                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                                    {description}
+                                </p>
+                            </div>
                             {/* Price Section */}
                             <div className="bg-white border border-slate-200 rounded-sm p-4">
                                 <div className="flex items-baseline gap-3 mb-1">
@@ -460,8 +470,8 @@ export default function ProductDetails() {
                                         onClick={handleAddToCart}
                                         disabled={isOutOfStock || addedToCart}
                                         className={`flex-1 flex items-center justify-center gap-2 py-3 text-white text-sm font-medium rounded-sm transition-all duration-200 ${addedToCart
-                                                ? 'bg-emerald-600 cursor-default'
-                                                : 'bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed'
+                                            ? 'bg-emerald-600 cursor-default'
+                                            : 'bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed'
                                             }`}
                                     >
                                         {addedToCart ? (
@@ -582,8 +592,8 @@ export default function ProductDetails() {
                         onClick={handleAddToCart}
                         disabled={isOutOfStock || addedToCart}
                         className={`px-6 py-2.5 text-white text-sm font-medium rounded-sm transition-all duration-200 ${addedToCart
-                                ? 'bg-emerald-600 cursor-default'
-                                : 'bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed'
+                            ? 'bg-emerald-600 cursor-default'
+                            : 'bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed'
                             }`}
                     >
                         {addedToCart ? 'Added ✓' : 'Add to Cart'}
