@@ -32,19 +32,16 @@ export default function Header() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      console.log("Clicked:", event.target);
-
       if (
         profileRef.current &&
         !profileRef.current.contains(event.target)
       ) {
-        console.log("Outside click detected");
+
         setShowProfileMenu(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-
     return () =>
       document.removeEventListener(
         "mousedown",
@@ -76,14 +73,12 @@ export default function Header() {
         setSuggestions(response.data.suggestions || []);
         setShowSuggestions(true);
       } catch (err) {
-        console.error("Suggestions Error:", err);
         setSuggestions([]);
         setShowSuggestions(false);
       }
     };
 
     fetchSuggestions();
-    console.log("API HIT", debouncedQuery);
   }, [debouncedQuery]);
 
   useEffect(() => {
@@ -381,13 +376,6 @@ export default function Header() {
                       </div>
                     )}
                   </div>
-
-                  {/* <button
-                    onClick={logout}
-                    className="bg-slate-800 text-white hover:bg-slate-700 text-sm font-semibold px-4 py-1.5 rounded-sm transition-colors cursor-pointer"
-                  >
-                    Logout
-                  </button> */}
                 </div>
               ) : (
                 // Logged OUT — login + signup
@@ -471,7 +459,7 @@ export default function Header() {
 
           <div className="pt-2 border-t border-slate-800/80 flex flex-col gap-2.5">
 
-            {/* Become a Seller — mobile */}
+            {/* Become a Seller for mobile */}
             {(!user || !user.roles?.includes('seller')) && (
               <a
                 href="/become-seller"
@@ -577,7 +565,6 @@ export default function Header() {
                 >
                   Sign Up
                 </a>
-
               </div>
             )}
           </div>
