@@ -26,6 +26,7 @@ import SellerDashboard from '../pages/seller/SellerDashboard';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 import NotFound from '../pages/errors/NotFound';
+import Profile from '../pages/Profile/Profile';
 
 function AppRoutes() {
   return (
@@ -33,12 +34,26 @@ function AppRoutes() {
       <Toaster
         position="top-right"
         toastOptions={{
-          duration: 3000,
+          duration: 2000,
+
           style: {
-            fontSize: '0.95rem',
-            marginTop: '70px'
+            background: "#fff",
+            color: "#0f172a",
+            border: "1px solid #e2e8f0",
+            padding: "16px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+            marginTop: "80px",
+            borderRadius: "14px"
+
           },
+          success: {
+            iconTheme: {
+              primary: "#16a34a",
+              secondary: "#fff"
+            }
+          }
         }}
+
       />
       <Routes>
         {/* Public Routes */}
@@ -57,6 +72,7 @@ function AppRoutes() {
         {/* Protected Routes for any logged in user */}
         <Route element={<ProtectedRoute />}>
           <Route path="/become-seller" element={<BecomeSeller />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
 
         {/* Protected Routes for admin */}
