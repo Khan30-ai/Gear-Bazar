@@ -6,6 +6,7 @@ import productRoutes from "./Routes/productRoutes.js";
 import orderRoutes from "./Routes/orderRoutes.js";
 import authRoutes from "./Routes/authRoutes.js";
 import userRoutes from "./Routes/userRoutes.js";
+import uploadRoutes from "./Routes/uploadRoutes.js";
 
 const app = express();
 
@@ -20,14 +21,15 @@ app.get("/", (req, res) => {
 });
 
 // Routes
-app.use("/api/auth",authRoutes);
+app.use("/api/auth", authRoutes);
 app.use('/api/sellers', sellerRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/orders", orderRoutes);  //this will change into (,adminAuth,confirmOrder) once jwt comes
-app.use("/api/users",userRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/upload", uploadRoutes);
 
 //to catch unknown routes
-app.use((req,res,next)=>{
+app.use((req, res, next) => {
   res.status(404);
   next(new Error("Route not found"))
 })
