@@ -64,7 +64,14 @@ export const getMySellerProfile = asyncHandler(async (req, res) => {
 
 //Update my seller profile
 export const updateMySellerProfile = asyncHandler(async (req, res) => {
-  const { shopName } = req.body;
+  const { shopName,
+    ownerName,
+    gstNumber,
+    phone,
+    address,
+    city,
+    state,
+    pincode, } = req.body;
 
   const seller = await Seller.findOne({ userId: req.user.id });
   if (!seller) {
@@ -72,6 +79,13 @@ export const updateMySellerProfile = asyncHandler(async (req, res) => {
     throw new Error("Seller profile not found");
   }
   if (shopName) seller.shopName = shopName;
+  if (ownerName) seller.ownerName = ownerName;
+  if (gstNumber) seller.gstNumber = gstNumber;
+  if (phone) seller.phone = phone;
+  if (address) seller.address = address;
+  if (city) seller.city = city;
+  if (state) seller.state = state;
+  if (pincode) seller.pincode = pincode;
   await seller.save();
 
   res.status(200).json({

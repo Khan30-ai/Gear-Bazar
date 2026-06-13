@@ -3,16 +3,16 @@ import User from "../Models/User.js";
 import bcrypt from "bcryptjs";
 
 //Get view profile
-export const getMe= asyncHandler(async(req,res)=>{
+export const getMyProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id);
 
-    if(!user){
+    if (!user) {
         res.status(404);
         throw new Error("User not found");
     }
 
     res.status(200).json({
-        user:{
+        user: {
             _id: user._id,
             name: user.name,
             email: user.email,
@@ -25,16 +25,16 @@ export const getMe= asyncHandler(async(req,res)=>{
 });
 
 //PUT update profile
-export const updateMe =  asyncHandler(async(req,res)=>{
-    const { name,phone } = req.body;
+export const updateMyProfile = asyncHandler(async (req, res) => {
+    const { name, phone } = req.body;
     const user = await User.findById(req.user.id);
 
-    if(!user){
+    if (!user) {
         res.status(404);
         throw new Error("User not found");
     }
-    if(name) user.name = name;
-    if(phone) user.phone= phone; 
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
 
     await user.save();
 
@@ -50,29 +50,29 @@ export const updateMe =  asyncHandler(async(req,res)=>{
 })
 
 //PUT change password
-export const changePassword= asyncHandler(async(req,res)=>{
-    const { currentPassword, newPassword }= req.body;
+export const changePassword = asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-    res.status(400);
-    throw new Error("Both current and new password are required");
-  }
-  const user= await User.findById(req.user.id).select("+password");
+        res.status(400);
+        throw new Error("Both current and new password are required");
+    }
+    const user = await User.findById(req.user.id).select("+password");
 
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
-  const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
 
-  if (!isMatch) {
-    res.status(401);
-    throw new Error("Current password is incorrect");
-  }
-  user.password = newPassword;
-  await user.save();
+    if (!isMatch) {
+        res.status(401);
+        throw new Error("Current password is incorrect");
+    }
+    user.password = newPassword;
+    await user.save();
 
-  res.status(200).json({
-    message: "Password updated successfully",
-  })
+    res.status(200).json({
+        message: "Password updated successfully",
+    })
 })

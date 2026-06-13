@@ -166,3 +166,24 @@ export const resetPassword = asyncHandler(async (req, res) => {
     message: "Password reset successful",
   });
 });
+
+export const changePassword = asyncHandler(
+  async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id).select("+password");
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      res.status(400);
+      throw new Error("Current password is Incorrect");
+    }
+    user.password = newPassword;
+    await user.save()
+    res.status(200).json({
+      message: "Password changed successfully"
+    })
+  }
+)
