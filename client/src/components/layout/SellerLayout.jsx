@@ -1,11 +1,30 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { getMySellerProfile } from '../../services/seller.service';
 
 export default function SellerLayout() {
     const { logout } = useAuth();
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [seller, setSeller] = useState(null);
+    const { user } = useAuth();
+
+    useEffect(() => {
+        const fetchSeller = async () => {
+            try {
+                const data = await getMySellerProfile();
+                setSeller(data);
+            }
+            catch (err) {
+                console.error(err);
+            }
+        };
+        if (user?.roles?.includes("seller")) {
+
+            fetchSeller();
+        }
+    }, [user]);
 
     const navItems = [
         { name: 'Dashboard', path: '/seller', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
@@ -17,8 +36,14 @@ export default function SellerLayout() {
         <div className="min-h-screen bg-slate-50 flex">
             {/* Sidebar */}
             <aside className="w-64 bg-slate-950 text-slate-300 hidden md:flex flex-col">
-                <div className="h-16 flex items-center px-6 bg-slate-950">
-                    <span className="text-xl font-bold text-white tracking-tight">SellerHub</span>
+                <div className="h-16 flex items-center px-6 border-b border-slate-800">
+
+                    <h1 className="text-lg font-semibold tracking-wide text-white truncate">
+
+                        {seller?.shopName || ""}
+
+                    </h1>
+
                 </div>
                 <nav className="flex-1 py-6 px-3 space-y-1">
                     {navItems.map((item) => (
@@ -123,8 +148,14 @@ export default function SellerLayout() {
                             )}
                         </button>
 
-                        <div className="font-bold text-lg text-white">
-                            SellerHub
+                        <div className="h-16 flex items-center px-6 border-b border-slate-800">
+
+                            <h1 className="text-lg font-semibold tracking-wide text-white truncate">
+
+                                {seller?.shopName || ""}
+
+                            </h1>
+
                         </div>
                     </div>
                     <div className="ml-auto flex items-center gap-4">
