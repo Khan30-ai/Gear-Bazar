@@ -24,7 +24,6 @@ import LoginRequiredModal from "../../components/product/LoginRequiredModal";
 import Toast from '../../components/ui/Toast';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../hooks/useCart';
-// import PRODUCTS from '../../data/products.js';
 import { useParams } from 'react-router-dom'
 import { getProductById } from "../../services/product.service";
 import { ProductNotFound } from "../errors"
