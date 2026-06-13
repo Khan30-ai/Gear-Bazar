@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createProduct, getProductById, updateProduct } from '../../services/product.service';
 import Toast from '../../components/ui/Toast';
+import { uploadImage } from '../../services/upload.service'
 
 export default function AddProduct() {
     const navigate = useNavigate();
@@ -26,8 +27,32 @@ export default function AddProduct() {
         brand: '',
         description: '',
         warrantyMonths: '',
-        images: ['']
+        images: []
     });
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [previewImage, setPreviewImage] = useState("");
+    //upload function
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setPreviewImage(
+            URL.createObjectURL(file)
+        );
+        try {
+            setUploadingImage(true);
+            const url = await uploadImage(file);
+            setFormData(prev => ({
+                ...prev,
+                images: [url]
+            }));
+
+        } catch (err) {
+            console.error(err);
+            alert("Image Upload Failed");
+        } finally {
+            setUploadingImage(false);
+        }
+    };
 
     const [fitments, setFitments] = useState([
         { vehicleType: 'car', brand: '', model: '', variant: '', yearFrom: '', yearTo: '' }
@@ -288,70 +313,112 @@ export default function AddProduct() {
 
                 {/* Media*/}
 
-                <div className="mb-8">
-                    <div className="flex items-center justify-between mb-3">
-                        <label className="block text-xs font-bold text-slate-700 uppercase">
-                            Product Images
-                        </label>
+                <div className="space-y-4">
 
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setFormData(prev => ({
-                                    ...prev,
-                                    images: [...prev.images, ""]
-                                }))
-                            }
-                            className="text-xs font-bold text-orange-600 hover:text-orange-700 uppercase"
-                        >
-                            + Add Image
-                        </button>
-                    </div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase">
+                        Product Image
+                    </label>
 
-                    <div className="space-y-3">
-                        {formData.images.map((img, index) => (
-                            <div key={index} className="flex gap-2">
-                                <input
-                                    type="url"
-                                    value={img}
-                                    onChange={(e) => {
-                                        const updated = [...formData.images];
-                                        updated[index] = e.target.value;
+                    <label
+                        htmlFor="product-image"
+                        className=" flex flex-col items-center justify-center w-full h-52 border-2 border-dashed border-slate-300 rounded-sm cursor-pointer hover:border-orange-500 hover:bg-orange-50/40 transition-all"
+                    >
+                        {!formData.images[0] ? (
 
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            images: updated
-                                        }));
-                                    }}
-                                    className="flex-1 bg-slate-50 border border-slate-200 rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-orange-500 focus:bg-white"
-                                    placeholder={`Image URL ${index + 1}`}
+                            <>
+                                <svg
+                                    className="w-10 h-10 text-slate-400 mb-3"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.8}
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                    />
+                                </svg>
+
+                                <p className="text-sm font-semibold text-slate-700">
+                                    Click to Upload
+                                </p>
+
+                                <p className="text-xs text-slate-500 mt-1">
+                                    PNG, JPG, WEBP (Max 5MB)
+                                </p>
+
+                            </>
+
+                        ) : (
+
+                            <img
+                                src={previewImage || formData.images[0]}
+                                alt="Preview"
+                                className="w-full h-full object-cover rounded-sm"
+                            />
+
+                        )}
+
+                    </label>
+
+                    <input
+                        id="product-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                    />
+
+                    {uploadingImage && (
+
+                        <div className="flex items-center gap-2 text-orange-600">
+                            <svg
+                                className="animate-spin h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
                                 />
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                />
+                            </svg>
 
-                                {formData.images.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const updated = formData.images.filter(
-                                                (_, i) => i !== index
-                                            );
+                            <span className="text-sm font-medium">
+                                Uploading image...
+                            </span>
+                        </div>
+                    )}
+                    {formData.images[0] && !uploadingImage && (
 
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                images: updated
-                                            }));
-                                        }}
-                                        className="px-3 border border-red-200 text-red-600 rounded-sm hover:bg-red-50"
-                                    >
-                                        ×
-                                    </button>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-green-600 font-medium">
 
-                    <p className="text-xs text-slate-500 mt-2">
-                        Add multiple product images. First image will be used as the main product image.
-                    </p>
+                                ✓ Image Uploaded Successfully
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        images: []
+                                    }))
+                                }
+                                className="text-sm text-red-500 hover:text-red-600"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Fitments */}
