@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useAuth } from "../../context/AuthContext"
 import { useNavigate, Link } from "react-router-dom"
+import { Eye, EyeOff } from "lucide-react"
 import { toast } from 'react-hot-toast'
 
 export default function Signup() {
@@ -10,6 +11,8 @@ export default function Signup() {
     const [confirmPassword, setConfirmPassword] = useState("")
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const { register } = useAuth()
     const navigate = useNavigate()
@@ -93,31 +96,65 @@ export default function Signup() {
                         </div>
 
                         <div>
-                            <label htmlFor="signup-password" className="block text-sm font-medium text-slate-950 mb-1.5">Password</label>
-                            <input
-                                type="password"
-                                id="signup-password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-                                required
-                                disabled={isLoading}
-                            />
-                        </div>
 
+                            <label
+                                htmlFor="signup-password"
+                                className="block text-sm font-medium text-slate-950 mb-1.5"
+                            >
+
+                                Password
+
+                            </label>
+
+                            <div className="relative">
+
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    id="signup-password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full px-3 py-2.5 pr-10 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                                    required
+                                    disabled={isLoading}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-900 transition-colors"
+                                >
+                                    {showPassword
+                                        ? <EyeOff className="h-5 w-5" />
+                                        : <Eye className="h-5 w-5" />
+                                    }
+                                </button>
+                            </div>
+                        </div>
                         <div>
-                            <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-slate-950 mb-1.5">Confirm Password</label>
-                            <input
-                                type="password"
-                                id="signup-confirm-password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-                                required
-                                disabled={isLoading}
-                            />
+                            <label
+                                htmlFor="signup-confirm-password"
+                                className="block text-sm font-medium text-slate-950 mb-1.5"
+                            >
+                                Confirm Password
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    id="signup-confirm-password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full px-3 py-2.5 pr-10 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                                    required
+                                    disabled={isLoading}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-900 transition-colors" >
+                                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
+                            </div>
                         </div>
 
                         {error && (

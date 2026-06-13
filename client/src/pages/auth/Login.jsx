@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useAuth } from "../../context/AuthContext"
+import { Eye, EyeOff } from "lucide-react"
 import { useNavigate, useLocation, Link } from "react-router-dom"
 import { toast } from 'react-hot-toast'
 
@@ -9,6 +10,7 @@ export default function Login() {
     const [rememberMe, setRememberMe] = useState(false)
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+    const [visible, setVisible] = useState(false);
 
     const { login } = useAuth()
     const navigate = useNavigate()
@@ -74,17 +76,34 @@ export default function Login() {
                         </div>
 
                         <div>
-                            <label htmlFor="login-password" className="block text-sm font-medium text-slate-950 mb-1.5">Password</label>
-                            <input
-                                type="password"
-                                id="login-password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-                                required
-                                disabled={isLoading}
-                            />
+
+                            <label
+                                htmlFor="login-password"
+                                className="block text-sm font-medium text-slate-950 mb-1.5"
+                            >
+                                Password
+                            </label>
+
+                            <div className="relative">
+
+                                <input
+                                    type={visible ? "text" : "password"}
+                                    id="login-password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full px-3 py-2.5 pr-10 bg-slate-50 border border-slate-200 rounded-sm text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                                    required
+                                    disabled={isLoading}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setVisible((v) => !v)}
+                                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-900"
+                                >
+                                    {visible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-between">
