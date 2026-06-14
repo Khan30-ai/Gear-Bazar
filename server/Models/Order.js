@@ -5,8 +5,8 @@ const orderSchema = new mongoose.Schema(
     //order lifescycle
     orderStatus: {
       type: String,
-      enum: ["CREATED", "CONFIRMED", "DELIVERED", "CANCELLED"],
-      default: "CREATED",
+      enum: ["PENDING", "CONFIRMED", "DELIVERED", "CANCELLED"],
+      default: "PENDING",
       required: true,
     },
     //Relationship between buyer , seller and product
@@ -30,9 +30,13 @@ const orderSchema = new mongoose.Schema(
     productSnapshot: {
       name: { type: String, required: true },
       partNumber: { type: String },
-      partNumberType: { type: String },
+      partType: { type: String },
       fitments: { type: Array },
       priceAtOrderTime: { type: Number, required: true },
+      image: { type: String },
+      brand: { type: String },
+      category: { type: String },
+      subcategory: { type: String }
     },
 
     //buyer snapshot again immutable
@@ -81,6 +85,11 @@ const orderSchema = new mongoose.Schema(
       enum: ["PENDING", "PAID", "FAILED"],
       default: "PENDING",
     },
+    paymentMethod: {
+      type: String,
+      enum: ["UPI", "COD", "CARD"],
+      default: "COD",
+    },
 
     //Lifecycle timestamps
     confirmedAt: Date,
@@ -89,7 +98,7 @@ const orderSchema = new mongoose.Schema(
 
     confirmedBy: {
       type: String,
-      ref: "Admin",
+      ref: "User",
       default: null,
     },
     cancelReason: {
