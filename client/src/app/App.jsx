@@ -27,6 +27,7 @@ import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 import NotFound from '../pages/errors/NotFound';
 import Profile from '../pages/Profile/Profile';
+import Orders from '../pages/buyer/Orders';
 
 function AppRoutes() {
   return (
@@ -35,7 +36,6 @@ function AppRoutes() {
         position="top-right"
         toastOptions={{
           duration: 2000,
-
           style: {
             background: "#fff",
             color: "#0f172a",
@@ -44,7 +44,6 @@ function AppRoutes() {
             boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
             marginTop: "80px",
             borderRadius: "14px"
-
           },
           success: {
             iconTheme: {
@@ -53,7 +52,6 @@ function AppRoutes() {
             }
           }
         }}
-
       />
       <Routes>
         {/* Public Routes */}
@@ -68,6 +66,7 @@ function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout/:id" element={<Checkout />} />
+        <Route path="/orders" element={<Orders />} />
 
         {/* Protected Routes for any logged in user */}
         <Route element={<ProtectedRoute />}>
