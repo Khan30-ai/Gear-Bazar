@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Truck, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useCart } from '../../hooks/useCart';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
+import api from '../../services/api';
 
 export default function Checkout() {
     const { id } = useParams();
@@ -48,23 +50,88 @@ export default function Checkout() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handlePlaceOrder = (e) => {
+    const handlePlaceOrder = async (e) => {
         e.preventDefault();
 
-        // Basic validation
-        if (!formData.fullName || !formData.phone || !formData.addressLine || !formData.city || !formData.pincode) {
-            alert('Please fill in all required fields.');
+        if (
+            !formData.fullName ||
+            !formData.phone ||
+            !formData.addressLine ||
+            !formData.city ||
+            !formData.pincode
+        ) {
+            alert("Please fill in all required fields.");
             return;
         }
 
-        setIsPlacingOrder(true);
+        try {
+            setIsPlacingOrder(true);
 
-        // Simulate API call
-        setTimeout(() => {
+            const payload = {
+                productId: checkoutItem._id,
+                quantity: checkoutItem.quantity,
+
+                address: {
+                    fullName: formData.fullName,
+                    phone: formData.phone,
+                    address: formData.addressLine,
+                    city: formData.city,
+                    state: formData.state,
+                    pincode: formData.pincode,
+                },
+            };
+
+            const { data } = await api.post("/orders", payload);
+
+            console.log("ORDER CREATED:", data);
+
             clearItem(checkoutItem._id);
-            setIsPlacingOrder(false);
+
+            toast.custom((t) => (
+                <div
+                    className={`${t.visible ? "animate-enter" : "animate-leave"} max-w-sm w-full bg-white border border-slate-200 shadow-lg rounded-sm p-4`}
+                >
+                    <div className="flex items-start gap-3">
+
+                        <div className="mt-3 flex h-9 w-9 items-center justify-center rounded-full bg-green-50">
+                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        </div>
+
+                        <div className="flex-1">
+                            <p className="text-sm font-bold text-slate-900">
+                                Order placed successfully
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+                                Your order has been created and is now visible in My Orders.
+                            </p>
+                            <button
+                                onClick={() => {
+                                    toast.dismiss(t.id);
+                                    navigate("/orders");
+                                }}
+                                className="mt-3 inline-flex items-center rounded-sm bg-slate-800 px-4 py-2 text-sm
+                                font-semibold text-white transition-colors hover:bg-orange-600">
+                                Go To My Orders
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            ), {
+                duration: 5000,
+            });
+
             setOrderSuccess(true);
-        }, 1500);
+        } catch (err) {
+            console.error(err);
+
+            alert(
+                err.response?.data?.message ||
+                "Failed to place order"
+            );
+        } finally {
+            setIsPlacingOrder(false);
+        }
     };
 
     if (orderSuccess) {
@@ -131,10 +198,6 @@ export default function Checkout() {
                                         <div className="md:col-span-2">
                                             <label className="block text-xs font-bold text-slate-700 mb-1.5">Address Line *</label>
                                             <input required type="text" name="addressLine" value={formData.addressLine} onChange={handleInputChange} className="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" placeholder="House/Flat No., Building Name, Street" />
-                                        </div>
-                                        <div className="md:col-span-2">
-                                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Landmark (Optional)</label>
-                                            <input type="text" name="landmark" value={formData.landmark} onChange={handleInputChange} className="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-slate-700 mb-1.5">City *</label>
