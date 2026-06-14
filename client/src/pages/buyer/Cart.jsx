@@ -36,9 +36,14 @@ export default function Cart() {
                     <ShoppingBag className="h-16 w-16 text-slate-300 mb-4" />
                     <h2 className="text-2xl font-bold text-slate-900 mb-2">Your cart is empty</h2>
                     <p className="text-slate-500 mb-6">Browse parts and add them to your cart</p>
-                    <button onClick={() => navigate('/products')} className="bg-slate-950 hover:bg-slate-800 text-white font-semibold py-2.5 px-6 rounded-sm transition-colors cursor-pointer">
-                        Browse Parts
-                    </button>
+                    <div className="flex gap-4">
+                        <button onClick={() => navigate('/')} className="bg-slate-950 hover:bg-slate-800 text-white font-semibold py-2.5 px-6 rounded-sm transition-colors cursor-pointer">
+                            Go to Home
+                        </button>
+                        <button onClick={() => navigate('/products')} className="bg-slate-950 hover:bg-slate-800 text-white font-semibold py-2.5 px-6 rounded-sm transition-colors cursor-pointer">
+                            Browse Parts
+                        </button>
+                    </div>
                 </div>
                 <Footer />
             </>
