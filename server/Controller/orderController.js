@@ -63,9 +63,10 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   //build order data
   const priceAtOrderTime = product.price;
-  const totalAmount = priceAtOrderTime * quantity;
+  const grandTotal = priceAtOrderTime * quantity;
 
   const order = await Order.create({
+
     buyerId: loggedInUserId, //USER is buyer
     sellerId: product.sellerId, //SELLER comes from product
     productId: product._id,
@@ -73,21 +74,33 @@ export const createOrder = asyncHandler(async (req, res) => {
     productSnapshot: {
       name: product.name,
       partNumber: product.partNumber,
-      partNumberType: product.partNumberType,
+      partType: product.partType,
       fitments: product.fitments,
       priceAtOrderTime,
+      image: product.images[0] || "",
+      brand: product.brand,
+      category: product.category,
+      subcategory: product.subcategory
     },
 
     buyerSnapshot: {
       name: buyer.name,
-      address,
+      address: address.address,
+    },
+
+    shippingAddress: {
+      fullName: address.fullName,
+      phone: address.phone,
+      address: address.address,
+      city: address.city,
+      state: address.state,
+      pincode: address.pincode,
     },
 
     quantity,
     priceAtOrderTime,
-    totalAmount,
+    grandTotal,
   });
-
   //Response
   res.status(201).json({
     message: "Order created successfully",
@@ -98,7 +111,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 //READ
 //GET /api/orders
 export const getOrders = asyncHandler(async (req, res) => {
-  
+
   let { page, limit } = req.query;
 
   //pagination
@@ -120,7 +133,7 @@ export const getOrders = asyncHandler(async (req, res) => {
 
   //seller view
   else if (roles.includes("seller")) {
-    const seller = await Seller.findOne({userId: userId });
+    const seller = await Seller.findOne({ userId: userId });
     if (!seller) {
       res.status(403);
       throw new Error("Seller not found");
@@ -157,7 +170,8 @@ export const getOrders = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 }) //newest first
     .skip(skip)
     .limit(limit)
-    .populate("sellerId", "shopName");
+    .populate("sellerId", "shopName")
+    .populate("productId", "name images");
 
   const total = await Order.countDocuments(filter);
   const totalPages = Math.ceil(total / limit);
@@ -192,9 +206,9 @@ export const confirmOrder = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Order not found");
   }
-  if (order.orderStatus !== "CREATED") {
+  if (order.orderStatus !== "PENDING") {
     res.status(409);
-    throw new Error("Only CREATED orders can be confirmed");
+    throw new Error("Only Pending orders can be confirmed");
   }
 
   //fetch product
@@ -260,7 +274,7 @@ export const cancelOrder = asyncHandler(async (req, res) => {
   //authorization rules (who can cancel at what point)
   const isAdmin = req.user.roles.includes("admin"); //in future jwt
 
-  //now buyer will be authorized to cancel CREATED order
+  //now buyer will be authorized to cancel pending order
   // and this code will remove later on once we add JWT
   const isBuyer = req.user.id.toString() === order.buyerId.toString();
 
@@ -269,7 +283,7 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     throw new Error("Only admin can cancel a confirmed order");
   }
 
-  if (order.orderStatus === "CREATED" && !isAdmin && !isBuyer) {
+  if (order.orderStatus === "PENDING" && !isAdmin && !isBuyer) {
     res.status(403);
     throw new Error("Not authorized to cancel this order");
   }
